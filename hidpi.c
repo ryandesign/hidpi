@@ -574,12 +574,13 @@ static Boolean has_trap(unsigned short trap) {
 }
 
 static Boolean init_app(void) {
+	Boolean good = false;
 	Handle menubar;
 	MenuHandle menu;
 	SysEnvRec env;
 
 	menubar = GetNewMBar(r_mbar);
-	if (nil == menubar) return false;
+	if (nil == menubar) goto fail;
 	SetMenuBar(menubar);
 	DisposeHandle(menubar);
 
@@ -593,7 +594,10 @@ static Boolean init_app(void) {
 	g_has_color_quickdraw = env.hasColorQD;
 	g_has_WaitNextEvent = has_trap(_WaitNextEvent);
 
-	return true;
+	good = true;
+
+fail:
+	return good;
 }
 
 static Boolean is_port_saving(void) {
