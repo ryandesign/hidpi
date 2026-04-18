@@ -84,7 +84,7 @@ data 'RMAP' (128, "mstr", purgeable) {
 	$"5354 5220 0000 0000"
 };
 
-resource 'STR#' (128) {
+resource 'STR#' (128, purgeable) {
 	{	/* array StringArray: 2 elements */
 		/* [1] */
 		"Hello, ",
@@ -93,7 +93,7 @@ resource 'STR#' (128) {
 	}
 };
 
-resource 'WIND' (128) {
+resource 'WIND' (128, purgeable) {
 	{48, 8, 191, 191},
 	documentProc,
 	invisible,
