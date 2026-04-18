@@ -98,11 +98,11 @@ data 'WIND' (128) {
 	$"0000 0A4E 6577 2057 696E 646F 77"
 };
 
-data 'mstr' (100, purgeable) {
-	$"0446 696C 65"
+resource 'mstr' (100, purgeable) {
+	"File"
 };
 
-data 'mstr' (101, purgeable) {
-	$"0451 7569 74"
+resource 'mstr' (101, purgeable) {
+	"Quit"
 };
 

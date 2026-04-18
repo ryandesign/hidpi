@@ -75,7 +75,7 @@ import_files() {
                             | macbinary decode --pipe -o "$tmpfile" || return $?
                         case $method in
                             rez)
-                                DeRez "$tmpfile" "$SDK/RIncludes/Types.r" \
+                                DeRez "$tmpfile" "$SDK/RIncludes/Types.r" ./types.r \
                                     -d ALRT_RezTemplateVersion=0 \
                                     -d DLOG_RezTemplateVersion=0 \
                                     | LC_CTYPE=C sed -E 's/^(\t\$"[^"]*").*/\1/' \
