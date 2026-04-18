@@ -602,7 +602,7 @@ static Boolean init_app(void) {
 	if (nil != menu) AddResMenu(menu, 'DRVR');
 
 	SysEnvirons(curSysEnvVers, &env);
-	// Tech Note TB 28: Problem with WaitNextEvent in MultiFinder 1.0
+	// Technote TB 28: Problem with WaitNextEvent in MultiFinder 1.0
 	if (env.systemVersion < 0x0500) g_sleep = 50;
 
 	g_has_color_quickdraw = env.hasColorQD;
