@@ -100,7 +100,7 @@ import_files \
     -rez \
         "$proj.π" "$proj.π.rsrc" \
     -text \
-        "$proj.c" \
+        "$proj.c" qdprocs.c qdprocs.h \
     -optional \
         -macbinary \
             "$proj" \
