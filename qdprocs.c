@@ -17,6 +17,16 @@ static Boolean is_port_saving(void) {
 	return nil != port->picSave || nil != port->rgnSave || nil != port->polySave;
 }
 
+static void double_shorts(short *buf, int count) {
+	int i;
+
+	for (i = 0; i < count; ++i) {
+		if (k_rgn_end_flag != buf[i]) {
+			buf[i] <<= 1;
+		}
+	}
+}
+
 static void double_point(Point *src_point, Point *dst_point) {
 	dst_point->h = src_point->h << 1;
 	dst_point->v = src_point->v << 1;
@@ -134,26 +144,17 @@ typedef pascal void (*PolyProcPtr)(GrafVerb, PolyHandle);
 static pascal void poly_2x(GrafVerb verb, PolyHandle poly) {
 	PenState pen;
 	PolyHandle poly_2x;
-	PolyPtr poly_ptr, poly_2x_ptr;
-	int i, num_points;
-	char saved_state;
+	PolyPtr poly_2x_ptr;
 
 	if (is_port_saving()) {
 		((PolyProcPtr)g_std_qdprocs.polyProc)(verb, poly);
 	} else {
 		poly_2x = poly;
 		if (noErr == HandToHand((Handle *)&poly_2x)) {
-			saved_state = HGetState((Handle)poly);
-			HLock((Handle)poly);
 			HLock((Handle)poly_2x);
-			poly_ptr = *poly;
 			poly_2x_ptr = *poly_2x;
-			double_rect(&poly_ptr->polyBBox, &poly_2x_ptr->polyBBox);
-			num_points = 1 + (poly_ptr->polySize - sizeof(Polygon)) / sizeof(Point);
-			for (i = 0; i < num_points; ++i) {
-				double_point(&poly_ptr->polyPoints[i], &poly_2x_ptr->polyPoints[i]);
-			}
-			HSetState((Handle)poly, saved_state);
+			double_shorts((short *)&poly_2x_ptr->polyBBox, (poly_2x_ptr->polySize - sizeof(short)) / sizeof(short));
+			HUnlock((Handle)poly_2x);
 			GetPenState(&pen);
 			PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 			((PolyProcPtr)g_std_qdprocs.polyProc)(verb, poly_2x);
@@ -167,56 +168,22 @@ typedef pascal void (*RgnProcPtr)(GrafVerb, RgnHandle);
 static pascal void rgn_2x(GrafVerb verb, RgnHandle rgn) {
 	PenState pen;
 	RgnHandle rgn_2x;
-	RgnPtr rgn_ptr, rgn_2x_ptr;
-	//Handle rgn_2x;
-	int remaining;
-	short *p, *p_2x;
-	short x, y;
-	char saved_state;
+	RgnPtr rgn_2x_ptr;
 
 	if (is_port_saving()) {
 		((RgnProcPtr)g_std_qdprocs.rgnProc)(verb, rgn);
 	} else {
-		rgn_2x = NewRgn();
-		//rgn_2x = NewHandle((**rgn).rgnSize);
-		if (nil != rgn_2x) {
-			SetHandleSize((Handle)rgn_2x, (**rgn).rgnSize);
-			if (noErr == MemError()) {
-				saved_state = HGetState((Handle)rgn);
-				HLock((Handle)rgn);
-				HLock((Handle)rgn_2x);
-				rgn_ptr = *rgn;
-				rgn_2x_ptr = *rgn_2x;
-				rgn_2x_ptr->rgnSize = rgn_ptr->rgnSize;
-				double_rect(&rgn_ptr->rgnBBox, &rgn_2x_ptr->rgnBBox);
-				// TODO: double rgn x!
-				// TODO: double rgn y!
-				p = (short *)((char *)rgn_ptr + sizeof(Region));
-				p_2x = (short *)((char *)rgn_2x_ptr + sizeof(Region));
-				remaining = (rgn_ptr->rgnSize - sizeof(Region)) / sizeof(short);
-				while (remaining-- > 0) {
-					y = *p++;
-					if (k_rgn_end_flag == y) {
-						*p_2x++ = y;
-						break;
-					}
-					*p_2x++ = y << 1;
-					while (remaining-- > 0) {
-						x = *p++;
-						if (k_rgn_end_flag == x) {
-							*p_2x++ = x;
-							break;
-						}
-						*p_2x++ = x << 1;
-					}
-				};
-				HSetState((Handle)rgn, saved_state);
-				GetPenState(&pen);
-				PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-				((RgnProcPtr)g_std_qdprocs.rgnProc)(verb, rgn_2x);
-				PenSize(pen.pnSize.h, pen.pnSize.v);
-			}
-			DisposeRgn(rgn_2x);
+		rgn_2x = rgn;
+		if (noErr == HandToHand((Handle *)&rgn_2x)) {
+			HLock((Handle)rgn_2x);
+			rgn_2x_ptr = *rgn_2x;
+			double_shorts((short *)&rgn_2x_ptr->rgnBBox, (rgn_2x_ptr->rgnSize - sizeof(short)) / sizeof(short));
+			HUnlock((Handle)rgn_2x);
+			GetPenState(&pen);
+			PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
+			((RgnProcPtr)g_std_qdprocs.rgnProc)(verb, rgn_2x);
+			PenSize(pen.pnSize.h, pen.pnSize.v);
+			DisposeHandle((Handle)rgn_2x);
 		}
 	}
 }
@@ -264,6 +231,5 @@ void init_qdprocs(void) {
 }
 
 // TODO: handle origin
-// TODO: simplify rgn doubling
 // TODO: don't double to more than 32766
 // TODO: handle cliprgn
