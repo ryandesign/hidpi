@@ -325,9 +325,8 @@ data 'STRS' (0) {
 data 'SYMS' (0) {
 };
 
-data 'TEXT' (0) {
-	$"2369 6E63 6C75 6465 203C 4D61 6348 6561"
-	$"6465 7273 3E00"
+resource 'TEXT' (0) {
+	"#include <MacHeaders>\0x00"
 };
 
 data 'WLOC' (0) {

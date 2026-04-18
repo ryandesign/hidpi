@@ -4,3 +4,7 @@ SPDX-License-Identifier: MIT
 */
 
 type 'mstr' as 'STR ';
+
+type 'TEXT' {
+    string;
+};
