@@ -93,9 +93,13 @@ resource 'STR#' (128) {
 	}
 };
 
-data 'WIND' (128) {
-	$"0030 0008 00BF 00BF 0000 0000 0100 0000"
-	$"0000 0A4E 6577 2057 696E 646F 77"
+resource 'WIND' (128) {
+	{48, 8, 191, 191},
+	documentProc,
+	invisible,
+	goAway,
+	0x0,
+	"New Window"
 };
 
 resource 'mstr' (100, purgeable) {

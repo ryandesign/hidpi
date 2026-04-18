@@ -78,6 +78,7 @@ import_files() {
                                 DeRez "$tmpfile" "$SDK/RIncludes/Types.r" ./types.r \
                                     -d ALRT_RezTemplateVersion=0 \
                                     -d DLOG_RezTemplateVersion=0 \
+                                    -d WIND_RezTemplateVersion=0 \
                                     | LC_CTYPE=C sed -E 's/^(\t\$"[^"]*").*/\1/' \
                                     | iconv -f macroman -t utf-8 \
                                     | ./sortrez.pl > "$outfile.r" || return $?
