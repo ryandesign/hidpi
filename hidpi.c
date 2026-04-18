@@ -860,7 +860,7 @@ static void init_qdprocs(void) {
 }
 
 static Boolean init(void) {
-	Boolean result = true;
+	Boolean good = false;
 
 	if (!has_128k_rom()) goto fail;
 
@@ -879,14 +879,14 @@ static Boolean init(void) {
 
 	InitCursor();
 	FlushEvents(everyEvent & ~diskEvt, 0);
+	good = true;
 	goto done;
 
 fail:
 	SysBeep(k_beep_duration);
-	result = false;
 
 done:
-	return result;
+	return good;
 }
 
 void main(void) {
