@@ -75,13 +75,19 @@ import_files() {
                             | macbinary decode --pipe -o "$tmpfile" || return $?
                         case $method in
                             rez)
+                                if [ -f "$outfile.r" ]; then
+                                    local preamble="$tmpdir/preamble"
+                                    sed -n '/^\/\*$/,/^\*\/$/p' "$outfile.r" > "$preamble" || return $?
+                                    printf "\n" >> "$preamble"
+                                    mv "$preamble" "$outfile.r"
+                                fi
                                 DeRez "$tmpfile" "$SDK/RIncludes/Types.r" ./types.r \
                                     -d ALRT_RezTemplateVersion=0 \
                                     -d DLOG_RezTemplateVersion=0 \
                                     -d WIND_RezTemplateVersion=0 \
                                     | LC_CTYPE=C sed -E 's/^(\t\$"[^"]*").*/\1/' \
                                     | iconv -f macroman -t utf-8 \
-                                    | ./sortrez.pl > "$outfile.r" || return $?
+                                    | ./sortrez.pl >> "$outfile.r" || return $?
                                 ;;
                             text)
                                 iconv -f macroman -t utf-8 < "$tmpfile" \
