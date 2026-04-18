@@ -546,11 +546,27 @@ static void event_loop(void) {
 }
 
 static short get_num_toolbox_traps(void) {
-	return (NGetTrapAddress(_InitGraf, ToolTrap) == NGetTrapAddress(0xAA6E, ToolTrap)) ? 0x200 : 0x400;
+	short num_traps;
+
+	if (NGetTrapAddress(_InitGraf, ToolTrap) == NGetTrapAddress(0xAA6E, ToolTrap)) {
+		num_traps = 0x200;
+	} else {
+		num_traps = 0x400;
+	}
+
+	return num_traps;
 }
 
 static TrapType get_trap_type(unsigned short trap) {
-	return (trap & 0x0800) ? ToolTrap : OSTrap;
+	TrapType trap_type;
+
+	if (trap & 0x0800) {
+		trap_type = ToolTrap;
+	} else {
+		trap_type = OSTrap;
+	}
+
+	return trap_type;
 }
 
 static Boolean has_trap(unsigned short trap) {
