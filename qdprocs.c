@@ -10,11 +10,11 @@ SPDX-License-Identifier: MIT
 QDProcs g_std_qdprocs;
 QDProcs g_my_qdprocs;
 
-static Boolean is_port_saving(void) {
+static Boolean is_port_2x(void) {
 	GrafPtr port;
 
 	GetPort(&port);
-	return nil != port->picSave || nil != port->rgnSave || nil != port->polySave;
+	return nil == port->picSave && nil == port->rgnSave && nil == port->polySave;
 }
 
 static void double_shorts(short *buf, int count) {
@@ -48,9 +48,7 @@ typedef pascal void (*TextProcPtr)(short, Ptr, Point, Point);
 static pascal void text_2x(short byte_count, Ptr text_buf, Point numer, Point denom) {
 	PenState pen;
 
-	if (is_port_saving()) {
-		((TextProcPtr)g_std_qdprocs.textProc)(byte_count, text_buf, numer, denom);
-	} else {
+	if (is_port_2x()) {
 		// TODO: double spExtra
 		// TODO: deduplicate pen size code
 		double_point(&numer, &numer);
@@ -59,6 +57,8 @@ static pascal void text_2x(short byte_count, Ptr text_buf, Point numer, Point de
 		((TextProcPtr)g_std_qdprocs.textProc)(byte_count, text_buf, numer, denom);
 		GetPenState(&pen);
 		MoveTo(pen.pnLoc.h >> 1, pen.pnLoc.v >> 1);
+	} else {
+		((TextProcPtr)g_std_qdprocs.textProc)(byte_count, text_buf, numer, denom);
 	}
 }
 
@@ -67,9 +67,7 @@ static pascal void line_2x(Point end_point) {
 	PenState pen;
 	Point end_point_2x;
 
-	if (is_port_saving()) {
-		((LineProcPtr)g_std_qdprocs.lineProc)(end_point);
-	} else {
+	if (is_port_2x()) {
 		double_point(&end_point, &end_point_2x);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
@@ -77,6 +75,8 @@ static pascal void line_2x(Point end_point) {
 		((LineProcPtr)g_std_qdprocs.lineProc)(end_point_2x);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
 		MoveTo(end_point.h, end_point.v);
+	} else {
+		((LineProcPtr)g_std_qdprocs.lineProc)(end_point);
 	}
 }
 
@@ -84,14 +84,14 @@ typedef pascal void (*RectProcPtr)(GrafVerb, Rect);
 static pascal void rect_2x(GrafVerb verb, Rect rect) {
 	PenState pen;
 
-	if (is_port_saving()) {
-		((RectProcPtr)g_std_qdprocs.rectProc)(verb, rect);
-	} else {
+	if (is_port_2x()) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 		((RectProcPtr)g_std_qdprocs.rectProc)(verb, rect);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
+	} else {
+		((RectProcPtr)g_std_qdprocs.rectProc)(verb, rect);
 	}
 }
 
@@ -99,14 +99,14 @@ typedef pascal void (*RRectProcPtr)(GrafVerb, Rect, short, short);
 static pascal void rrect_2x(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
 	PenState pen;
 
-	if (is_port_saving()) {
-		((RRectProcPtr)g_std_qdprocs.rRectProc)(verb, rect, oval_width, oval_height);
-	} else {
+	if (is_port_2x()) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 		((RRectProcPtr)g_std_qdprocs.rRectProc)(verb, rect, oval_width << 1, oval_height << 1);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
+	} else {
+		((RRectProcPtr)g_std_qdprocs.rRectProc)(verb, rect, oval_width, oval_height);
 	}
 }
 
@@ -114,14 +114,14 @@ typedef pascal void (*OvalProcPtr)(GrafVerb, Rect);
 static pascal void oval_2x(GrafVerb verb, Rect rect) {
 	PenState pen;
 
-	if (is_port_saving()) {
-		((OvalProcPtr)g_std_qdprocs.ovalProc)(verb, rect);
-	} else {
+	if (is_port_2x()) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 		((OvalProcPtr)g_std_qdprocs.ovalProc)(verb, rect);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
+	} else {
+		((OvalProcPtr)g_std_qdprocs.ovalProc)(verb, rect);
 	}
 }
 
@@ -129,14 +129,14 @@ typedef pascal void (*ArcProcPtr)(GrafVerb, Rect, short, short);
 static pascal void arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
 	PenState pen;
 
-	if (is_port_saving()) {
-		((ArcProcPtr)g_std_qdprocs.arcProc)(verb, rect, start_angle, arc_angle);
-	} else {
+	if (is_port_2x()) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 		((ArcProcPtr)g_std_qdprocs.arcProc)(verb, rect, start_angle, arc_angle);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
+	} else {
+		((ArcProcPtr)g_std_qdprocs.arcProc)(verb, rect, start_angle, arc_angle);
 	}
 }
 
@@ -146,9 +146,7 @@ static pascal void poly_2x(GrafVerb verb, PolyHandle poly) {
 	PolyHandle poly_2x;
 	PolyPtr poly_2x_ptr;
 
-	if (is_port_saving()) {
-		((PolyProcPtr)g_std_qdprocs.polyProc)(verb, poly);
-	} else {
+	if (is_port_2x()) {
 		poly_2x = poly;
 		if (noErr == HandToHand((Handle *)&poly_2x)) {
 			HLock((Handle)poly_2x);
@@ -161,6 +159,8 @@ static pascal void poly_2x(GrafVerb verb, PolyHandle poly) {
 			PenSize(pen.pnSize.h, pen.pnSize.v);
 			DisposeHandle((Handle)poly_2x);
 		}
+	} else {
+		((PolyProcPtr)g_std_qdprocs.polyProc)(verb, poly);
 	}
 }
 
@@ -170,9 +170,7 @@ static pascal void rgn_2x(GrafVerb verb, RgnHandle rgn) {
 	RgnHandle rgn_2x;
 	RgnPtr rgn_2x_ptr;
 
-	if (is_port_saving()) {
-		((RgnProcPtr)g_std_qdprocs.rgnProc)(verb, rgn);
-	} else {
+	if (is_port_2x()) {
 		rgn_2x = rgn;
 		if (noErr == HandToHand((Handle *)&rgn_2x)) {
 			HLock((Handle)rgn_2x);
@@ -185,6 +183,8 @@ static pascal void rgn_2x(GrafVerb verb, RgnHandle rgn) {
 			PenSize(pen.pnSize.h, pen.pnSize.v);
 			DisposeHandle((Handle)rgn_2x);
 		}
+	} else {
+		((RgnProcPtr)g_std_qdprocs.rgnProc)(verb, rgn);
 	}
 }
 
@@ -192,11 +192,11 @@ typedef pascal void (*BitsProcPtr)(BitMap *, Rect *, Rect *, short, RgnHandle);
 static pascal void bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
 	Rect dst_rect_2x;
 
-	if (is_port_saving()) {
-		((BitsProcPtr)g_std_qdprocs.bitsProc)(src_bits, src_rect, dst_rect, mode, mask_rgn);
-	} else {
+	if (is_port_2x()) {
 		double_rect(dst_rect, &dst_rect_2x);
 		((BitsProcPtr)g_std_qdprocs.bitsProc)(src_bits, src_rect, &dst_rect_2x, mode, mask_rgn);
+	} else {
+		((BitsProcPtr)g_std_qdprocs.bitsProc)(src_bits, src_rect, dst_rect, mode, mask_rgn);
 	}
 }
 
@@ -204,12 +204,12 @@ typedef pascal short (*TxMeasProcPtr)(short, Ptr, Point *, Point *, FontInfo *);
 static pascal short txmeas_2x(short byte_count, Ptr text_buf, Point *numer, Point *denom, FontInfo *info) {
 	short width;
 
-	if (is_port_saving()) {
-		width = ((TxMeasProcPtr)g_std_qdprocs.txMeasProc)(byte_count, text_buf, numer, denom, info);
-	} else {
+	if (is_port_2x()) {
 		double_point(numer, numer);
 		width = ((TxMeasProcPtr)g_std_qdprocs.txMeasProc)(byte_count, text_buf, numer, denom, info);
 		half_point(numer, numer);
+	} else {
+		width = ((TxMeasProcPtr)g_std_qdprocs.txMeasProc)(byte_count, text_buf, numer, denom, info);
 	}
 
 	return width;
