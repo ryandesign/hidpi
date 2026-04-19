@@ -11,10 +11,9 @@ QDProcs g_std_qdprocs;
 QDProcs g_my_qdprocs;
 
 static Boolean is_port_2x(void) {
-	GrafPtr port;
-
-	GetPort(&port);
-	return nil == port->picSave && nil == port->rgnSave && nil == port->polySave;
+	return nil == qd.thePort->picSave \
+		&& nil == qd.thePort->rgnSave \
+		&& nil == qd.thePort->polySave;
 }
 
 static void double_shorts(short *buf, int count) {
