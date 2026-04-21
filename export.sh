@@ -70,6 +70,7 @@ export_files() {
                         Rez "$SDK/RIncludes/Types.r" "$tmpfile2" \
                             -d ALRT_RezTemplateVersion=0 \
                             -d DLOG_RezTemplateVersion=0 \
+                            -d WIND_RezTemplateVersion=0 \
                             -o "$tmpfile" || return $?
                         rm -f "$tmpfile2"
                         tmpfile2=
