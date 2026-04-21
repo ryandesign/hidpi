@@ -159,6 +159,10 @@ static void do_apple_menu(short menu_id, short menu_item) {
 	}
 }
 
+static void delay_until(long end_ticks) {
+	while (TickCount() < end_ticks);
+}
+
 static void do_menu(long menu_result) {
 	long end_ticks;
 	short menu_id;
@@ -183,7 +187,7 @@ static void do_menu(long menu_result) {
 			break;
 	}
 
-	while (TickCount() < end_ticks);
+	delay_until(end_ticks);
 	HiliteMenu(0);
 }
 
