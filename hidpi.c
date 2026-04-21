@@ -11,7 +11,10 @@ SPDX-License-Identifier: MIT
 #define k_beep_duration 4
 #define k_in_front ((WindowPtr)-1)
 #define k_menu_hilite_ticks 6L
-#define k_scrollbar_adjust 15
+#define k_scrollbar_size 16
+#define k_scrollbar_adjust (k_scrollbar_size - 1)
+#define k_control_visible 0xFF
+#define k_control_invisible 0x00
 #define k_whole_menu 0
 
 #define r_mbar 128
@@ -49,10 +52,59 @@ SPDX-License-Identifier: MIT
 #define rect_width(rect) ((rect).right - (rect).left)
 #define rect_height(rect) ((rect).bottom - (rect).top)
 
+typedef struct app_window_rec {
+	WindowRecord window;
+	ControlHandle h_scrollbar;
+	ControlHandle v_scrollbar;
+} app_window_rec;
+typedef app_window_rec *app_window_ptr;
+
 Boolean g_done = false;
 Boolean g_has_color_quickdraw;
 Boolean g_has_WaitNextEvent;
 unsigned long g_sleep = MAXLONG;
+Handle g_scrollbar_proc = (Handle)-1L;
+
+static void show_and_inval_control(ControlHandle control) {
+	(**control).contrlVis = k_control_visible;
+	InvalRect(&(**control).contrlRect);
+}
+
+static void hide_and_inval_control(ControlHandle control) {
+	(**control).contrlVis = k_control_invisible;
+	InvalRect(&(**control).contrlRect);
+}
+
+static void draw_hidden_scrollbar(ControlHandle control) {
+	Rect rect;
+
+	rect = (**control).contrlRect;
+	FrameRect(&rect);
+	InsetRect(&rect, 1, 1);
+	EraseRect(&rect);
+}
+
+static void hide_and_draw_scrollbar(ControlHandle control) {
+	(**control).contrlVis = k_control_invisible;
+	draw_hidden_scrollbar(control);
+}
+
+static Boolean is_scrollbar(ControlHandle control) {
+	return g_scrollbar_proc == (**control).contrlDefProc;
+}
+
+static void update_controls(void) {
+	ControlHandle control;
+	Rect rect;
+
+	//DrawControls(qd.thePort);
+	UpdateControls(qd.thePort, qd.thePort->visRgn);
+	for (control = ((WindowPeek)qd.thePort)->controlList; nil != control; control = (**control).nextControl) {
+		if (k_control_visible != (**control).contrlVis && is_scrollbar(control)) {
+			draw_hidden_scrollbar(control);
+		}
+	}
+}
 
 static Boolean is_app_window(WindowPtr window) {
 	Boolean result;
@@ -84,29 +136,85 @@ static void do_quit(void) {
 
 static void do_close_window(WindowPtr window) {
 	if (is_app_window(window)) {
-		DisposeWindow(window);
+		CloseWindow(window);
+		DisposePtr((Ptr)window);
 	} else if (is_da_window(window)) {
 		CloseDeskAcc(((WindowPeek)window)->windowKind);
 	}
 }
 
-static void do_new_window(Boolean use_my_qdprocs) {
+static void adjust_controls(void) {
+	Rect rect;
+	ControlHandle control;
+
+	rect = qd.thePort->portRect;
+
+	control = ((app_window_ptr)qd.thePort)->h_scrollbar;
+	hide_and_inval_control(control);
+	MoveControl(control, -1, rect.bottom - k_scrollbar_adjust);
+	SizeControl(control, rect_width(rect) - (k_scrollbar_adjust - 2), k_scrollbar_size);
+	show_and_inval_control(control);
+
+	control = ((app_window_ptr)qd.thePort)->v_scrollbar;
+	hide_and_inval_control(control);
+	MoveControl(control, rect.right - k_scrollbar_adjust, -1);
+	SizeControl(control, k_scrollbar_size, rect_height(rect) - (k_scrollbar_adjust - 2));
+	show_and_inval_control(control);
+}
+
+static ControlHandle new_scrollbar(WindowPtr window) {
+	ControlHandle control;
+
+	control = NewControl(window, &window->portRect, "\p", true, 0, 0, 0, scrollBarProc, 0L);
+	g_scrollbar_proc = (**control).contrlDefProc;
+	return control;
+}
+
+static Boolean do_new_window(Boolean use_my_qdprocs) {
+	app_window_ptr app_window;
 	WindowPtr window;
 	Rect rect;
 	GrafPtr saved_port;
+	ControlHandle control;
+	Boolean good;
 
-	window = GetNewWindow(r_WIND, nil, k_in_front);
-	if (window) {
+	GetPort(&saved_port);
+
+	app_window = (app_window_ptr)NewPtr(sizeof(app_window_rec));
+	good = nil != app_window;
+
+	if (good) {
+		window = GetNewWindow(r_WIND, app_window, k_in_front);
+		good = nil != window;
+	}
+
+	if (good) {
+		SetPort(window);
+		app_window->h_scrollbar = new_scrollbar(window);
+		app_window->v_scrollbar = new_scrollbar(window);
+		good = nil != app_window->h_scrollbar && nil != app_window->v_scrollbar;
+	}
+
+	if (good) {
 		if (use_my_qdprocs) {
 			window->grafProcs = &g_my_qdprocs;
 			rect = window->portRect;
 			SizeWindow(window, rect_width(rect) << 1, rect_height(rect) << 1, false);
 		}
-		GetPort(&saved_port);
-		SetPort(window);
+		adjust_controls();
 		ShowWindow(window);
-		SetPort(saved_port);
+	} else {
+		if (nil != window) {
+			CloseWindow(window);
+		}
+		if (nil != app_window) {
+			DisposePtr((Ptr)app_window);
+		}
 	}
+
+	SetPort(saved_port);
+
+	return good;
 }
 
 static void do_debug_menu(short menu_id, short menu_item) {
@@ -191,39 +299,41 @@ static void do_menu(long menu_result) {
 	HiliteMenu(0);
 }
 
-static void calc_content_rect(WindowPtr window, Rect *content_rect) {
-	*content_rect = window->portRect;
-	content_rect->right -= k_scrollbar_adjust;
-	content_rect->bottom -= k_scrollbar_adjust;
+static void calc_content_rect(Rect *rect) {
+	*rect = qd.thePort->portRect;
+	rect->right -= k_scrollbar_adjust;
+	rect->bottom -= k_scrollbar_adjust;
 }
 
-static void calc_scrollbar_rgn(WindowPtr window, RgnHandle scrollbar_rgn) {
-	RgnHandle content_rgn;
-	Rect content_rect;
+static void calc_grow_icon_rect(Rect *rect) {
+	*rect = qd.thePort->portRect;
+	rect->left = rect->right - (k_scrollbar_adjust - 1);
+	rect->top = rect->bottom - (k_scrollbar_adjust - 1);
+}
 
-	if (nil != scrollbar_rgn) {
-		content_rgn = NewRgn();
-		if (nil != content_rgn) {
-			calc_content_rect(window, &content_rect);
-			RectRgn(content_rgn, &content_rect);
-			RectRgn(scrollbar_rgn, &window->portRect);
-			DiffRgn(scrollbar_rgn, content_rgn, scrollbar_rgn);
-			DisposeRgn(content_rgn);
-		}
+static void inval_grow_icon(void) {
+	Rect rect;
+
+	calc_grow_icon_rect(&rect);
+	InvalRect(&rect);
+}
+
+static void draw_grow_icon(void) {
+	Rect rect;
+	RgnHandle saved_clip;
+
+	saved_clip = NewRgn();
+	if (nil != saved_clip) {
+		calc_grow_icon_rect(&rect);
+		GetClip(saved_clip);
+		ClipRect(&rect);
 	}
-}
 
-static void inval_scrollbar_rgn(WindowPtr window) {
-	RgnHandle scrollbar_rgn;
-	GrafPtr saved_port;
+	DrawGrowIcon(qd.thePort);
 
-	scrollbar_rgn = NewRgn();
-	if (nil != scrollbar_rgn) {
-		calc_scrollbar_rgn(window, scrollbar_rgn);
-		GetPort(&saved_port);
-		SetPort(window);
-		InvalRgn(scrollbar_rgn);
-		SetPort(saved_port);
+	if (nil != saved_clip) {
+		SetClip(saved_clip);
+		DisposeRgn(saved_clip);
 	}
 }
 
@@ -231,7 +341,18 @@ static void activate_window(WindowPtr window, Boolean activate) {
 	GrafPtr saved_port;
 
 	if (is_app_window(window)) {
-		inval_scrollbar_rgn(window);
+		GetPort(&saved_port);
+		SetPort(window);
+		if (activate) {
+			inval_grow_icon();
+			show_and_inval_control(((app_window_ptr)window)->h_scrollbar);
+			show_and_inval_control(((app_window_ptr)window)->v_scrollbar);
+		} else {
+			draw_grow_icon();
+			hide_and_draw_scrollbar(((app_window_ptr)window)->v_scrollbar);
+			hide_and_draw_scrollbar(((app_window_ptr)window)->h_scrollbar);
+		}
+		SetPort(saved_port);
 	}
 }
 
@@ -281,8 +402,11 @@ static void draw_app_window(WindowPtr window) {
 
 	GetPort(&saved_port);
 	SetPort(window);
-	DrawGrowIcon(window);
-	calc_content_rect(window, &rect);
+
+	draw_grow_icon();
+	update_controls();
+
+	calc_content_rect(&rect);
 
 	saved_clip = NewRgn();
 	if (nil != saved_clip) {
@@ -422,16 +546,22 @@ static void do_key_down_event(EventRecord *event) {
 }
 
 static void do_grow_window(WindowPtr window, EventRecord *event) {
+	GrafPtr saved_port;
 	long size;
 	Rect rect;
-	RgnHandle rgn;
 
 	SetRect(&rect, k_min_doc_width, k_min_doc_height, k_max_doc_width, k_max_doc_height);
 	size = GrowWindow(window, event->where, &rect);
-	if (0 != size) {
-		inval_scrollbar_rgn(window);
+	if (0L != size) {
+		GetPort(&saved_port);
+		SetPort(window);
+
+		inval_grow_icon();
 		SizeWindow(window, LoWord(size), HiWord(size), true);
-		inval_scrollbar_rgn(window);
+		inval_grow_icon();
+		adjust_controls();
+
+		SetPort(saved_port);
 	}
 }
 
@@ -619,7 +749,7 @@ fail:
 }
 
 // TODO: implement adjust_cursor
-// TODO: add scroll bars
+// TODO: make scroll bars work
 // TODO: add sample controls
 // TODO: improve function names
 // TODO: CrsrPin
