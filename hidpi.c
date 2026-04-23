@@ -16,6 +16,7 @@ SPDX-License-Identifier: MIT
 #define k_control_visible 0xFF
 #define k_control_invisible 0x00
 #define k_whole_menu 0
+#define k_default_sleep MAXLONG
 
 #define r_mbar 128
 
@@ -62,7 +63,8 @@ typedef app_window_rec *app_window_ptr;
 Boolean g_done = false;
 Boolean g_has_color_quickdraw;
 Boolean g_has_WaitNextEvent;
-unsigned long g_sleep = MAXLONG;
+short g_system_version;
+unsigned long g_sleep = k_default_sleep;
 Handle g_scrollbar_proc = (Handle)-1L;
 
 static void show_and_inval_control(ControlHandle control) {
@@ -357,7 +359,14 @@ static void activate_window(WindowPtr window, Boolean activate) {
 }
 
 static void do_suspend_resume_event(EventRecord *event) {
-	activate_window(FrontWindow(), event->message & resumeFlag);
+	Boolean resuming = event->message & resumeFlag;
+
+	// Technote TB 28: Problem with WaitNextEvent in MultiFinder 1.0
+	if (g_system_version < 0x0500) {
+		g_sleep = resuming ? k_default_sleep : 50;
+	}
+
+	activate_window(FrontWindow(), resuming);
 }
 
 static void do_mouse_moved_event(EventRecord *event) {
@@ -736,9 +745,7 @@ static Boolean init_app(void) {
 	if (nil != menu) AddResMenu(menu, 'DRVR');
 
 	SysEnvirons(curSysEnvVers, &env);
-	// Technote TB 28: Problem with WaitNextEvent in MultiFinder 1.0
-	if (env.systemVersion < 0x0500) g_sleep = 50;
-
+	g_system_version = env.systemVersion;
 	g_has_color_quickdraw = env.hasColorQD;
 	g_has_WaitNextEvent = has_trap(_WaitNextEvent);
 
