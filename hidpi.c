@@ -369,13 +369,13 @@ static void do_suspend_resume_event(EventRecord *event) {
 	activate_window(FrontWindow(), resuming);
 }
 
-static void do_mouse_moved_event(EventRecord *event) {
+static void do_idle(void) {
 }
 
 static void do_os_event(EventRecord *event) {
 	switch ((event->message >> 24) & 0xFF) {
 		case mouseMovedMessage:
-			do_mouse_moved_event(event);
+			do_idle();
 			break;
 		case suspendResumeMessage:
 			do_suspend_resume_event(event);
@@ -682,6 +682,8 @@ static void event_loop(void) {
 		}
 		if (got_event) {
 			do_event(&event);
+		} else {
+			do_idle();
 		}
 	}
 }
