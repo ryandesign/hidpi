@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 #include <Values.h>
 
 #define k_beep_duration 4
-#define k_in_front ((WindowPtr)-1)
+#define k_in_front ((WindowPtr)-1L)
 #define k_menu_hilite_ticks 6L
 #define k_scrollbar_size 16
 #define k_scrollbar_adjust (k_scrollbar_size - 1)
