@@ -525,9 +525,9 @@ static void do_update_event(EventRecord *event) {
 	WindowPtr window;
 
 	window = (WindowPtr)event->message;
-	if (nil != window) {
+	if (is_app_window(window)) {
 		BeginUpdate(window);
-		if (is_app_window(window)) {
+		if (!EmptyRgn(window->visRgn)) {
 			draw_app_window(window);
 		}
 		EndUpdate(window);
