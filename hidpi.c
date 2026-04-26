@@ -16,7 +16,6 @@ SPDX-License-Identifier: MIT
 #define k_control_visible 0xFF
 #define k_control_invisible 0x00
 #define k_whole_menu 0
-#define k_default_sleep MAXLONG
 
 #define r_mbar 128
 
@@ -61,10 +60,10 @@ typedef struct app_window_rec {
 typedef app_window_rec *app_window_ptr;
 
 Boolean g_done = false;
+Boolean g_is_in_foreground = true;
 Boolean g_has_color_quickdraw;
 Boolean g_has_WaitNextEvent;
 short g_system_version;
-unsigned long g_sleep = k_default_sleep;
 Handle g_scrollbar_proc = (Handle)-1L;
 
 static void show_and_inval_control(ControlHandle control) {
@@ -359,14 +358,8 @@ static void activate_window(WindowPtr window, Boolean activate) {
 }
 
 static void do_suspend_resume_event(EventRecord *event) {
-	Boolean resuming = event->message & resumeFlag;
-
-	// Technote TB 28: Problem with WaitNextEvent in MultiFinder 1.0
-	if (g_system_version < 0x0500) {
-		g_sleep = resuming ? k_default_sleep : 50;
-	}
-
-	activate_window(FrontWindow(), resuming);
+	g_is_in_foreground = event->message & resumeFlag;
+	activate_window(FrontWindow(), g_is_in_foreground);
 }
 
 static void do_idle(void) {
@@ -668,6 +661,23 @@ static void adjust_menus(void) {
 	}
 }
 
+static unsigned long get_sleep(void) {
+	unsigned long sleep = MAXLONG;
+
+	if (g_is_in_foreground) {
+		if (is_da_window(FrontWindow())) {
+			sleep = GetCaretTime();
+		}
+	} else {
+		// Technote TB 28: Problem with WaitNextEvent in MultiFinder 1.0
+		if (g_system_version < 0x0500) {
+			sleep = 50;
+		}
+	}
+
+	return sleep;
+}
+
 static void event_loop(void) {
 	Boolean got_event;
 	EventRecord event;
@@ -675,7 +685,7 @@ static void event_loop(void) {
 	while (!g_done) {
 		adjust_menus();
 		if (g_has_WaitNextEvent) {
-			got_event = WaitNextEvent(everyEvent, &event, g_sleep, nil);
+			got_event = WaitNextEvent(everyEvent, &event, get_sleep(), nil);
 		} else {
 			SystemTask();
 			got_event = GetNextEvent(everyEvent, &event);
