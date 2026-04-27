@@ -586,6 +586,7 @@ static void do_grow_window(WindowPtr window, EventRecord *event) {
 static void do_mouse_down_event(EventRecord *event) {
 	WindowPtr window;
 	short part;
+	Rect rect;
 
 	part = FindWindow(event->where, &window);
 	switch (part) {
@@ -601,7 +602,12 @@ static void do_mouse_down_event(EventRecord *event) {
 			}
 			break;
 		case inDrag:
-			DragWindow(window, event->where, &screenBits.bounds);
+			if (has_128k_rom()) {
+				rect = (**GetGrayRgn()).rgnBBox;
+			} else {
+				rect = qd.screenBits.bounds;
+			}
+			DragWindow(window, event->where, &rect);
 			break;
 		case inGrow:
 			do_grow_window(window, event);
