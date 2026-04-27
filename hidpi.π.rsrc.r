@@ -19,10 +19,14 @@ resource 'MBAR' (128, purgeable) {
 resource 'MENU' (128) {
 	128,
 	textMenuProc,
-	allEnabled,
+	0x7FFFFFFD,
 	enabled,
 	apple,
-	{	/* array: 0 elements */
+	{	/* array: 2 elements */
+		/* [1] */
+		"About", noIcon, noKey, noMark, plain,
+		/* [2] */
+		"-", noIcon, noKey, noMark, plain
 	}
 };
 

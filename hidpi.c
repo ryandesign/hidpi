@@ -20,6 +20,7 @@ SPDX-License-Identifier: MIT
 #define r_mbar 128
 
 #define r_MENU_apple 128
+#define i_about 1
 
 #define r_MENU_file 129
 #define i_new 1
@@ -254,7 +255,7 @@ static void do_file_menu(short menu_id, short menu_item) {
 	}
 }
 
-static void do_apple_menu(short menu_id, short menu_item) {
+static void do_desk_accessory(short menu_id, short menu_item) {
 	MenuHandle menu;
 	GrafPtr saved_port;
 	Str255 da_name;
@@ -265,6 +266,21 @@ static void do_apple_menu(short menu_id, short menu_item) {
 		GetPort(&saved_port);
 		OpenDeskAcc(da_name);
 		SetPort(saved_port);
+	}
+}
+
+static void do_about(void) {
+	SysBeep(k_beep_duration);
+}
+
+static void do_apple_menu(short menu_id, short menu_item) {
+	switch (menu_item) {
+		case i_about:
+			do_about();
+			break;
+		default:
+			do_desk_accessory(menu_id, menu_item);
+			break;
 	}
 }
 
