@@ -17,6 +17,10 @@ SPDX-License-Identifier: MIT
 #define k_control_invisible 0x00
 #define k_whole_menu 0
 
+#ifndef kHighLevelEvent
+#define kHighLevelEvent 23
+#endif
+
 #define r_mbar 128
 
 #define r_MENU_apple 128
@@ -373,6 +377,77 @@ static void activate_window(WindowPtr window, Boolean activate) {
 	}
 }
 
+static void adjust_cursor(Point where, RgnHandle cursor_rgn) {
+	Boolean handled = false;
+	WindowPtr window;
+	GrafPtr saved_port;
+	RgnHandle arrow_rgn;
+	RgnHandle content_rgn;
+	Rect rect;
+	Point top_left;
+	CursHandle cursor;
+
+	GetPort(&saved_port);
+
+	arrow_rgn = NewRgn();
+	content_rgn = NewRgn();
+	if (nil != arrow_rgn) {
+		SetRectRgn(arrow_rgn, -32768, -32768, 32766, 32766);
+	}
+
+	window = FrontWindow();
+	if (nil != window && nil != arrow_rgn && nil != content_rgn) {
+		SetPort(window);
+
+		if (is_app_window(window)) {
+			calc_content_rect(&rect);
+		} else {
+			rect = window->portRect;
+		}
+		LocalToGlobal(&topLeft(rect));
+		LocalToGlobal(&botRight(rect));
+		RectRgn(content_rgn, &rect);
+
+		top_left = topLeft(window->portBits.bounds);
+		SetOrigin(-top_left.h, -top_left.v);
+		SectRgn(content_rgn, window->visRgn, content_rgn);
+		SetOrigin(0, 0);
+
+		DiffRgn(arrow_rgn, content_rgn, arrow_rgn);
+
+		if (PtInRgn(where, content_rgn)) {
+			if (is_app_window(window)) {
+				cursor = GetCursor(crossCursor);
+				if (nil != cursor) {
+					SetCursor(*cursor);
+					handled = true;
+				}
+				CopyRgn(content_rgn, cursor_rgn);
+			} else {
+				// Non-app windows like DAs will handle their own cursors. Don't
+				// know what their cursor regions are so request a mouse-moved
+				// event whenever the cursor moves at all in those windows.
+				SetRectRgn(cursor_rgn, where.h, where.v, where.h + 1, where.v + 1);
+				handled = true;
+			}
+		}
+	}
+
+	if (!handled) {
+		SetCursor(&qd.arrow);
+		CopyRgn(arrow_rgn, cursor_rgn);
+	}
+
+	if (nil != arrow_rgn) {
+		DisposeRgn(arrow_rgn);
+	}
+	if (nil != content_rgn) {
+		DisposeRgn(content_rgn);
+	}
+
+	SetPort(saved_port);
+}
+
 static void do_suspend_resume_event(EventRecord *event) {
 	g_is_in_foreground = event->message & resumeFlag;
 	activate_window(FrontWindow(), g_is_in_foreground);
@@ -703,17 +778,28 @@ static unsigned long get_sleep(void) {
 static void event_loop(void) {
 	Boolean got_event;
 	EventRecord event;
+	RgnHandle cursor_rgn;
+
+	cursor_rgn = NewRgn();
 
 	while (!g_done) {
 		adjust_menus();
 		if (g_has_WaitNextEvent) {
-			got_event = WaitNextEvent(everyEvent, &event, get_sleep(), nil);
+			got_event = WaitNextEvent(everyEvent, &event, get_sleep(), cursor_rgn);
 		} else {
 			SystemTask();
 			got_event = GetNextEvent(everyEvent, &event);
+			if (!got_event && !PtInRgn(event.where, cursor_rgn)) {
+				got_event = true;
+				event.what = osEvt;
+				event.message = mouseMovedMessage << 24;
+			}
 		}
 		if (got_event) {
 			do_event(&event);
+			if (g_is_in_foreground && kHighLevelEvent != event.what) {
+				adjust_cursor(event.where, cursor_rgn);
+			}
 		} else {
 			do_idle();
 		}
@@ -789,7 +875,6 @@ fail:
 	return good;
 }
 
-// TODO: implement adjust_cursor
 // TODO: make scroll bars work
 // TODO: add sample controls
 // TODO: improve function names
