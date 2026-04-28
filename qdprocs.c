@@ -282,54 +282,44 @@ static pascal void Arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc
 	}
 }
 
-static pascal void Poly_2x(GrafVerb verb, obj_handle poly) {
-	PolyProcPtr std_Poly;
+static pascal void PolyOrRgn_2x(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle obj) {
 	GrafPtr port;
 	PenState pen;
-	obj_handle poly_2x;
-
-	start_accessing_globals();
-	std_Poly = g_std_qdprocs.Poly;
-	stop_accessing_globals();
+	obj_handle obj_2x;
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		poly_2x = new_obj_2x(poly);
-		if (nil != poly_2x) {
+		obj_2x = new_obj_2x(obj);
+		if (nil != obj_2x) {
 			GetPenState(&pen);
 			PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-			(std_Poly)(verb, poly_2x);
+			(proc)(verb, obj_2x);
 			PenSize(pen.pnSize.h, pen.pnSize.v);
-			dispose_obj_2x(poly_2x);
+			dispose_obj_2x(obj_2x);
 		}
 	} else {
-		(std_Poly)(verb, poly);
+		(proc)(verb, obj);
 	}
 }
 
-static pascal void Rgn_2x(GrafVerb verb, obj_handle rgn) {
-	RgnProcPtr std_Rgn;
-	GrafPtr port;
-	PenState pen;
-	obj_handle rgn_2x;
+static pascal void Poly_2x(GrafVerb verb, obj_handle poly) {
+	PolyProcPtr proc;
 
 	start_accessing_globals();
-	std_Rgn = g_std_qdprocs.Rgn;
+	proc = g_std_qdprocs.Poly;
 	stop_accessing_globals();
 
-	GetPort(&port);
-	if (is_port_2x(port)) {
-		rgn_2x = new_obj_2x(rgn);
-		if (nil != rgn_2x) {
-			GetPenState(&pen);
-			PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-			(std_Rgn)(verb, rgn_2x);
-			PenSize(pen.pnSize.h, pen.pnSize.v);
-			dispose_obj_2x(rgn_2x);
-		}
-	} else {
-		(std_Rgn)(verb, rgn);
-	}
+	PolyOrRgn_2x(proc, verb, poly);
+}
+
+static pascal void Rgn_2x(GrafVerb verb, obj_handle rgn) {
+	RgnProcPtr proc;
+
+	start_accessing_globals();
+	proc = g_std_qdprocs.Rgn;
+	stop_accessing_globals();
+
+	PolyOrRgn_2x(proc, verb, rgn);
 }
 
 static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
