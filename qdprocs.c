@@ -198,25 +198,30 @@ static pascal void Line_2x(Point end_point) {
 	}
 }
 
-static pascal void Rect_2x(GrafVerb verb, Rect rect) {
-	RectProcPtr std_Rect;
+static pascal void RectOrOval_2x(RectOrOvalProcPtr proc, GrafVerb verb, Rect rect) {
 	GrafPtr port;
 	PenState pen;
-
-	start_accessing_globals();
-	std_Rect = g_std_qdprocs.Rect;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-		(std_Rect)(verb, rect);
+		(proc)(verb, rect);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
 	} else {
-		(std_Rect)(verb, rect);
+		(proc)(verb, rect);
 	}
+}
+
+static pascal void Rect_2x(GrafVerb verb, Rect rect) {
+	RectProcPtr proc;
+
+	start_accessing_globals();
+	proc = g_std_qdprocs.Rect;
+	stop_accessing_globals();
+
+	RectOrOval_2x(proc, verb, rect);
 }
 
 static pascal void RRect_2x(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
@@ -241,24 +246,13 @@ static pascal void RRect_2x(GrafVerb verb, Rect rect, short oval_width, short ov
 }
 
 static pascal void Oval_2x(GrafVerb verb, Rect rect) {
-	OvalProcPtr std_Oval;
-	GrafPtr port;
-	PenState pen;
+	OvalProcPtr proc;
 
 	start_accessing_globals();
-	std_Oval = g_std_qdprocs.Oval;
+	proc = g_std_qdprocs.Oval;
 	stop_accessing_globals();
 
-	GetPort(&port);
-	if (is_port_2x(port)) {
-		double_rect(&rect, &rect);
-		GetPenState(&pen);
-		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-		(std_Oval)(verb, rect);
-		PenSize(pen.pnSize.h, pen.pnSize.v);
-	} else {
-		(std_Oval)(verb, rect);
-	}
+	RectOrOval_2x(proc, verb, rect);
 }
 
 static pascal void Arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
