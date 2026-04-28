@@ -229,6 +229,9 @@ void init_qdprocs(void) {
 	g_my_qdprocs.txMeasProc = (Ptr)&txmeas_2x;
 }
 
+void deinit_qdprocs(void) {
+}
+
 // TODO: handle origin
 // TODO: don't double to more than 32766
 // TODO: handle cliprgn

@@ -9,5 +9,6 @@ SPDX-License-Identifier: MIT
 extern QDProcs g_my_qdprocs;
 
 extern void init_qdprocs(void);
+extern void deinit_qdprocs(void);
 
 #endif
