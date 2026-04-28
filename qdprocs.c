@@ -24,7 +24,6 @@ SPDX-License-Identifier: MIT
 #endif
 
 //#define k_port_is_2x 1
-#define k_rgn_end_flag 0x7FFF
 
 // A polygon or a region.
 typedef struct object {
@@ -102,12 +101,28 @@ static Boolean is_port_2x(GrafPtr port) {
 		&& nil == port->polySave;
 }
 
-static void double_shorts(short *buf, int count) {
+static void double_shorts(short *src_buf, short *dst_buf, short size) {
+	short count;
+	short src;
 	int i;
 
+	count = size / sizeof(short);
 	for (i = 0; i < count; ++i) {
-		if (k_rgn_end_flag != buf[i]) {
-			buf[i] <<= 1;
+		src = src_buf[i];
+		if (src < 0) {
+			if (src >= -16384) {
+				dst_buf[i] = src << 1;
+			} else {
+				dst_buf[i] = -32768;
+			}
+		} else {
+			if (src < 16384) {
+				dst_buf[i] = src << 1;
+			} else if (32767 == src) {
+				dst_buf[i] = 32767;
+			} else {
+				dst_buf[i] = 32766;
+			}
 		}
 	}
 }
@@ -131,15 +146,20 @@ static void double_rect(Rect *src_rect, Rect *dst_rect) {
 
 static obj_handle new_obj_2x(obj_handle obj) {
 	obj_handle obj_2x;
-	obj_ptr obj_2x_ptr;
+	short size;
+	char state;
 
-	obj_2x = obj;
+	size = (**obj).size;
+	obj_2x = (obj_handle)NewHandle(size);
 
-	if (noErr == HandToHand((Handle *)&obj_2x)) {
+	if (nil != obj_2x) {
+		state = HGetState((Handle)obj);
+		HLock((Handle)obj);
 		HLock((Handle)obj_2x);
-		obj_2x_ptr = *obj_2x;
-		double_shorts((short *)&obj_2x_ptr->bbox, (obj_2x_ptr->size - sizeof(short)) / sizeof(short));
+		(**obj_2x).size = size;
+		double_shorts((short *)&(**obj).bbox, (short *)&(**obj_2x).bbox, size - sizeof(short));
 		HUnlock((Handle)obj_2x);
+		HSetState((Handle)obj, state);
 	} else {
 		obj_2x = nil;
 	}
@@ -420,5 +440,4 @@ void deinit_qdprocs(void) {
 }
 
 // TODO: handle origin
-// TODO: don't double to more than 32766
 // TODO: handle cliprgn
