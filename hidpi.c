@@ -10,12 +10,14 @@ SPDX-License-Identifier: MIT
 
 #define k_beep_duration 4
 #define k_in_front ((WindowPtr)-1L)
-#define k_menu_hilite_ticks 6L
 #define k_scrollbar_size 16
 #define k_scrollbar_adjust (k_scrollbar_size - 1)
 #define k_control_visible 0xFF
 #define k_control_invisible 0x00
 #define k_whole_menu 0
+
+// https://web.archive.org/web/20201028143324/http://anarchistturtle.com/Quinn/WWW/HISubtleties/AnarchieMenuFeedback.html
+#define k_visual_delay 6L
 
 #ifndef kHighLevelEvent
 #define kHighLevelEvent 23
@@ -297,7 +299,7 @@ static void do_menu(long menu_result) {
 	short menu_id;
 	short menu_item;
 
-	end_ticks = TickCount() + k_menu_hilite_ticks;
+	end_ticks = TickCount() + k_visual_delay;
 	menu_id = HiWord(menu_result);
 	menu_item = LoWord(menu_result);
 
