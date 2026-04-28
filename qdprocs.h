@@ -6,8 +6,7 @@ SPDX-License-Identifier: MIT
 #ifndef QDPROCS_H
 #define QDPROCS_H
 
-extern QDProcs g_my_qdprocs;
-
+extern void set_port_2x(GrafPtr port);
 extern void init_qdprocs(void);
 extern void deinit_qdprocs(void);
 

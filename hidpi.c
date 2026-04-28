@@ -178,7 +178,7 @@ static ControlHandle new_scrollbar(WindowPtr window) {
 	return control;
 }
 
-static Boolean do_new_window(Boolean use_my_qdprocs) {
+static Boolean do_new_window(Boolean use_qdprocs_2x) {
 	app_window_ptr app_window;
 	WindowPtr window;
 	Rect rect;
@@ -204,8 +204,8 @@ static Boolean do_new_window(Boolean use_my_qdprocs) {
 	}
 
 	if (good) {
-		if (use_my_qdprocs) {
-			window->grafProcs = &g_my_qdprocs;
+		if (use_qdprocs_2x) {
+			set_port_2x(window);
 			rect = window->portRect;
 			SizeWindow(window, rect_width(rect) << 1, rect_height(rect) << 1, false);
 		}
