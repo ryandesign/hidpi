@@ -224,27 +224,6 @@ static pascal void Rect_2x(GrafVerb verb, Rect rect) {
 	RectOrOval_2x(proc, verb, rect);
 }
 
-static pascal void RRect_2x(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
-	RRectProcPtr std_RRect;
-	GrafPtr port;
-	PenState pen;
-
-	start_accessing_globals();
-	std_RRect = g_std_qdprocs.RRect;
-	stop_accessing_globals();
-
-	GetPort(&port);
-	if (is_port_2x(port)) {
-		double_rect(&rect, &rect);
-		GetPenState(&pen);
-		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-		(std_RRect)(verb, rect, oval_width << 1, oval_height << 1);
-		PenSize(pen.pnSize.h, pen.pnSize.v);
-	} else {
-		(std_RRect)(verb, rect, oval_width, oval_height);
-	}
-}
-
 static pascal void Oval_2x(GrafVerb verb, Rect rect) {
 	OvalProcPtr proc;
 
@@ -255,25 +234,44 @@ static pascal void Oval_2x(GrafVerb verb, Rect rect) {
 	RectOrOval_2x(proc, verb, rect);
 }
 
-static pascal void Arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
-	ArcProcPtr std_Arc;
+static pascal void RRectOrArc_2x(RRectOrArcProcPtr proc, Boolean scale_shorts, GrafVerb verb, Rect rect, short short1, short short2) {
 	GrafPtr port;
 	PenState pen;
-
-	start_accessing_globals();
-	std_Arc = g_std_qdprocs.Arc;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
 		double_rect(&rect, &rect);
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
-		(std_Arc)(verb, rect, start_angle, arc_angle);
+		if (scale_shorts) {
+			short1 <<= 1;
+			short2 <<= 1;
+		}
+		(proc)(verb, rect, short1, short2);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
 	} else {
-		(std_Arc)(verb, rect, start_angle, arc_angle);
+		(proc)(verb, rect, short1, short2);
 	}
+}
+
+static pascal void RRect_2x(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
+	RRectProcPtr proc;
+
+	start_accessing_globals();
+	proc = g_std_qdprocs.RRect;
+	stop_accessing_globals();
+
+	RRectOrArc_2x(proc, true, verb, rect, oval_width, oval_height);
+}
+
+static pascal void Arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
+	ArcProcPtr proc;
+
+	start_accessing_globals();
+	proc = g_std_qdprocs.Arc;
+	stop_accessing_globals();
+
+	RRectOrArc_2x(proc, false, verb, rect, start_angle, arc_angle);
 }
 
 static pascal void PolyOrRgn_2x(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle obj) {
