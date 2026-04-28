@@ -162,7 +162,6 @@ static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point de
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		// TODO: double spExtra
 		// TODO: deduplicate pen size code
 		double_point(&numer, &numer);
 		GetPenState(&pen);

@@ -5,6 +5,7 @@ SPDX-License-Identifier: MIT
 
 #include "qdprocs.h"
 
+#include <FixMath.h>
 #include <Traps.h>
 #include <Values.h>
 
@@ -514,6 +515,7 @@ static void draw_app_window(WindowPtr window) {
 	TextFont(systemFont);
 	TextFace(condense);
 	GetFontInfo(&font_info);
+	SpaceExtra(Long2Fix(k_obj_margin));
 
 	MoveTo(k_obj_margin, k_obj_margin + font_info.ascent);
 	width = 0;
