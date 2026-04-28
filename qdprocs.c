@@ -152,12 +152,12 @@ static void dispose_obj_2x(obj_handle obj_2x) {
 }
 
 static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point denom) {
-	TextProcPtr std_Text;
+	TextProcPtr proc;
 	GrafPtr port;
 	PenState pen;
 
 	start_accessing_globals();
-	std_Text = g_std_qdprocs.Text;
+	proc = g_std_qdprocs.Text;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -166,22 +166,22 @@ static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point de
 		double_point(&numer, &numer);
 		GetPenState(&pen);
 		Move(pen.pnLoc.h, pen.pnLoc.v);
-		(std_Text)(byte_count, text_buf, numer, denom);
+		(proc)(byte_count, text_buf, numer, denom);
 		GetPenState(&pen);
 		MoveTo(pen.pnLoc.h >> 1, pen.pnLoc.v >> 1);
 	} else {
-		(std_Text)(byte_count, text_buf, numer, denom);
+		(proc)(byte_count, text_buf, numer, denom);
 	}
 }
 
 static pascal void Line_2x(Point end_point) {
-	LineProcPtr std_Line;
+	LineProcPtr proc;
 	GrafPtr port;
 	Point end_point_2x;
 	PenState pen;
 
 	start_accessing_globals();
-	std_Line = g_std_qdprocs.Line;
+	proc = g_std_qdprocs.Line;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -190,11 +190,11 @@ static pascal void Line_2x(Point end_point) {
 		GetPenState(&pen);
 		PenSize(pen.pnSize.h << 1, pen.pnSize.v << 1);
 		Move(pen.pnLoc.h, pen.pnLoc.v);
-		(std_Line)(end_point_2x);
+		(proc)(end_point_2x);
 		PenSize(pen.pnSize.h, pen.pnSize.v);
 		MoveTo(end_point.h, end_point.v);
 	} else {
-		(std_Line)(end_point);
+		(proc)(end_point);
 	}
 }
 
@@ -315,13 +315,13 @@ static pascal void Rgn_2x(GrafVerb verb, obj_handle rgn) {
 }
 
 static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
-	BitsProcPtr std_Bits;
+	BitsProcPtr proc;
 	GrafPtr port;
 	Rect new_src_rect;
 	Rect new_dst_rect;
 
 	start_accessing_globals();
-	std_Bits = g_std_qdprocs.Bits;
+	proc = g_std_qdprocs.Bits;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -337,25 +337,25 @@ static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, sho
 		new_dst_rect = *dst_rect;
 	}
 
-	(std_Bits)(src_bits, &new_src_rect, &new_dst_rect, mode, mask_rgn);
+	(proc)(src_bits, &new_src_rect, &new_dst_rect, mode, mask_rgn);
 }
 
 static pascal short TxMeas_2x(short byte_count, Ptr text_buf, Point *numer, Point *denom, FontInfo *info) {
-	TxMeasProcPtr std_TxMeas;
+	TxMeasProcPtr proc;
 	GrafPtr port;
 	short width;
 
 	start_accessing_globals();
-	std_TxMeas = g_std_qdprocs.TxMeas;
+	proc = g_std_qdprocs.TxMeas;
 	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
 		double_point(numer, numer);
-		width = (std_TxMeas)(byte_count, text_buf, numer, denom, info);
+		width = (proc)(byte_count, text_buf, numer, denom, info);
 		half_point(numer, numer);
 	} else {
-		width = (std_TxMeas)(byte_count, text_buf, numer, denom, info);
+		width = (proc)(byte_count, text_buf, numer, denom, info);
 	}
 
 	return width;
