@@ -172,13 +172,24 @@ static void dispose_obj_2x(obj_handle obj_2x) {
 }
 
 typedef struct port_state {
+	GrafPtr port;
+	Rect bits_bounds;
 	RgnHandle clip;
+	RgnHandle vis;
 	PenState pen;
 } port_state;
 
-static void begin_2x(port_state *state, Boolean pen_size_2x) {
+static void begin_2x(port_state *state, GrafPtr port, Boolean pen_size_2x) {
 	RgnHandle clip;
 	RgnHandle clip_2x;
+	RgnHandle vis;
+	RgnHandle vis_2x;
+
+#ifdef USE_TRAP_PATCHING
+	state->port = port;
+
+	state->bits_bounds = port->portBits.bounds;
+	double_rect(&port->portBits.bounds, &port->portBits.bounds);
 
 	clip = NewRgn();
 	if (nil != clip) {
@@ -194,6 +205,16 @@ static void begin_2x(port_state *state, Boolean pen_size_2x) {
 	}
 	state->clip = clip;
 
+	vis = port->visRgn;
+	vis_2x = (RgnHandle)new_obj_2x((obj_handle)vis);
+	if (nil != vis_2x) {
+		port->visRgn = vis_2x;
+	} else {
+		vis = nil;
+	}
+	state->vis = vis;
+#endif
+
 	GetPenState(&state->pen);
 	if (pen_size_2x) {
 		PenSize(state->pen.pnSize.h << 1, state->pen.pnSize.v << 1);
@@ -203,10 +224,21 @@ static void begin_2x(port_state *state, Boolean pen_size_2x) {
 }
 
 static void end_2x(port_state *state) {
+#ifdef USE_TRAP_PATCHING
+	if (nil != state->port) {
+		state->port->portBits.bounds = state->bits_bounds;
+	}
+
 	if (nil != state->clip) {
 		SetClip(state->clip);
 		DisposeRgn(state->clip);
 	}
+
+	if (nil != state->vis) {
+		dispose_obj_2x((obj_handle)state->port->visRgn);
+		state->port->visRgn = state->vis;
+	}
+#endif
 
 	if (0xFFFFFFFF != *(long *)&state->pen.pnSize) {
 		PenSize(state->pen.pnSize.h, state->pen.pnSize.v);
@@ -224,7 +256,7 @@ static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point de
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		begin_2x(&state, false);
+		begin_2x(&state, port, false);
 		double_point(&numer, &numer);
 		Move(state.pen.pnLoc.h, state.pen.pnLoc.v);
 		(proc)(byte_count, text_buf, numer, denom);
@@ -248,7 +280,7 @@ static pascal void Line_2x(Point end_point) {
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		begin_2x(&state, true);
+		begin_2x(&state, port, true);
 		double_point(&end_point, &end_point_2x);
 		Move(state.pen.pnLoc.h, state.pen.pnLoc.v);
 		(proc)(end_point_2x);
@@ -265,7 +297,7 @@ static pascal void RectOrOval_2x(RectOrOvalProcPtr proc, GrafVerb verb, Rect rec
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		begin_2x(&state, true);
+		begin_2x(&state, port, true);
 		double_rect(&rect, &rect);
 		(proc)(verb, rect);
 		end_2x(&state);
@@ -300,7 +332,7 @@ static pascal void RRectOrArc_2x(RRectOrArcProcPtr proc, Boolean shorts_2x, Graf
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
-		begin_2x(&state, true);
+		begin_2x(&state, port, true);
 		double_rect(&rect, &rect);
 		if (shorts_2x) {
 			short1 <<= 1;
@@ -342,7 +374,7 @@ static pascal void PolyOrRgn_2x(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle
 	if (is_port_2x(port)) {
 		obj_2x = new_obj_2x(obj);
 		if (nil != obj_2x) {
-			begin_2x(&state, true);
+			begin_2x(&state, port, true);
 			(proc)(verb, obj_2x);
 			end_2x(&state);
 			dispose_obj_2x(obj_2x);
@@ -391,7 +423,7 @@ static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, sho
 	}
 
 	if (is_port_2x(port)) {
-		begin_2x(&state, false);
+		begin_2x(&state, port, false);
 		double_rect(dst_rect, &new_dst_rect);
 	} else {
 		new_dst_rect = *dst_rect;
