@@ -495,6 +495,7 @@ static void draw_app_window(WindowPtr window) {
 	PolyHandle poly;
 	RgnHandle rgn;
 	Handle icon;
+	char state;
 
 	GetPort(&saved_port);
 	SetPort(window);
@@ -605,7 +606,10 @@ static void draw_app_window(WindowPtr window) {
 
 	icon = GetIcon(noteIcon);
 	if (nil != icon) {
+		state = HGetState(icon);
+		HLock(icon);
 		PlotIcon(&rect, icon);
+		HSetState(icon, state);
 	}
 
 	if (nil != saved_clip) {
