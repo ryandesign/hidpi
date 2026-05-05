@@ -48,26 +48,39 @@ typedef PolyOrRgnProcPtr RgnProcPtr;
 typedef pascal void (*BitsProcPtr)(BitMap *, Rect *, Rect *, short, RgnHandle);
 typedef pascal short (*TxMeasProcPtr)(short, Ptr, Point *, Point *, FontInfo *);
 
+#ifdef USE_TRAP_PATCHING
+// Pointers to the original versions of all of our patched traps.
+typedef struct trap_procs {
+#else
 // Like the standard QDProcs struct from Quickdraw.h but with better types.
-typedef struct qdprocs {
-	TextProcPtr Text;
-	LineProcPtr Line;
-	RectProcPtr Rect;
-	RRectProcPtr RRect;
-	OvalProcPtr Oval;
-	ArcProcPtr Arc;
-	PolyProcPtr Poly;
-	RgnProcPtr Rgn;
-	BitsProcPtr Bits;
-	ProcPtr Comment; // unused
-	TxMeasProcPtr TxMeas;
-	ProcPtr GetPic; // unused
-	ProcPtr PutPic; // unused
-} qdprocs;
-
-static qdprocs g_std_qdprocs;
+typedef struct qd_procs {
+#endif
+	TextProcPtr StdText;
+	LineProcPtr StdLine;
+	RectProcPtr StdRect;
+	RRectProcPtr StdRRect;
+	OvalProcPtr StdOval;
+	ArcProcPtr StdArc;
+	PolyProcPtr StdPoly;
+	RgnProcPtr StdRgn;
+	BitsProcPtr StdBits;
 #ifndef USE_TRAP_PATCHING
-static qdprocs g_qdprocs_2x;
+	ProcPtr StdComment; // unused
+#endif
+	TxMeasProcPtr StdTxMeas;
+#ifndef USE_TRAP_PATCHING
+	ProcPtr StdGetPic; // unused
+	ProcPtr StdPutPic; // unused
+} qd_procs;
+#else
+} trap_procs;
+#endif
+
+#ifdef USE_TRAP_PATCHING
+static trap_procs g_procs_lo;
+#else
+static qd_procs g_procs_lo;
+static qd_procs g_procs_hi;
 #endif
 
 // The filler field of the GrafPort seems like a nice place to stash our 2x flag
@@ -77,7 +90,7 @@ static qdprocs g_qdprocs_2x;
 void set_port_2x(GrafPtr port) {
 //	port->filler |= k_port_is_2x;
 #ifndef USE_TRAP_PATCHING
-	port->grafProcs = (QDProcs *)&g_qdprocs_2x;
+	port->grafProcs = (QDProcs *)&g_procs_hi;
 #endif
 }
 
@@ -245,13 +258,13 @@ static void end_2x(port_state *state) {
 	}
 }
 
-static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point denom) {
+static pascal void StdText_hi(short byte_count, Ptr text_buf, Point numer, Point denom) {
 	port_state state;
 	TextProcPtr proc;
 	GrafPtr port;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Text;
+	proc = g_procs_lo.StdText;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -268,14 +281,14 @@ static pascal void Text_2x(short byte_count, Ptr text_buf, Point numer, Point de
 	}
 }
 
-static pascal void Line_2x(Point end_point) {
+static pascal void StdLine_hi(Point end_point) {
 	port_state state;
 	LineProcPtr proc;
 	GrafPtr port;
 	Point end_point_2x;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Line;
+	proc = g_procs_lo.StdLine;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -291,7 +304,7 @@ static pascal void Line_2x(Point end_point) {
 	}
 }
 
-static pascal void RectOrOval_2x(RectOrOvalProcPtr proc, GrafVerb verb, Rect rect) {
+static pascal void StdRectOrOval_hi(RectOrOvalProcPtr proc, GrafVerb verb, Rect rect) {
 	port_state state;
 	GrafPtr port;
 
@@ -306,27 +319,27 @@ static pascal void RectOrOval_2x(RectOrOvalProcPtr proc, GrafVerb verb, Rect rec
 	}
 }
 
-static pascal void Rect_2x(GrafVerb verb, Rect rect) {
+static pascal void StdRect_hi(GrafVerb verb, Rect rect) {
 	RectProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Rect;
+	proc = g_procs_lo.StdRect;
 	stop_accessing_globals();
 
-	RectOrOval_2x(proc, verb, rect);
+	StdRectOrOval_hi(proc, verb, rect);
 }
 
-static pascal void Oval_2x(GrafVerb verb, Rect rect) {
+static pascal void StdOval_hi(GrafVerb verb, Rect rect) {
 	OvalProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Oval;
+	proc = g_procs_lo.StdOval;
 	stop_accessing_globals();
 
-	RectOrOval_2x(proc, verb, rect);
+	StdRectOrOval_hi(proc, verb, rect);
 }
 
-static pascal void RRectOrArc_2x(RRectOrArcProcPtr proc, Boolean shorts_2x, GrafVerb verb, Rect rect, short short1, short short2) {
+static pascal void StdRRectOrArc_hi(RRectOrArcProcPtr proc, Boolean shorts_2x, GrafVerb verb, Rect rect, short short1, short short2) {
 	port_state state;
 	GrafPtr port;
 
@@ -345,27 +358,27 @@ static pascal void RRectOrArc_2x(RRectOrArcProcPtr proc, Boolean shorts_2x, Graf
 	}
 }
 
-static pascal void RRect_2x(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
+static pascal void StdRRect_hi(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
 	RRectProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.RRect;
+	proc = g_procs_lo.StdRRect;
 	stop_accessing_globals();
 
-	RRectOrArc_2x(proc, true, verb, rect, oval_width, oval_height);
+	StdRRectOrArc_hi(proc, true, verb, rect, oval_width, oval_height);
 }
 
-static pascal void Arc_2x(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
+static pascal void StdArc_hi(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
 	ArcProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Arc;
+	proc = g_procs_lo.StdArc;
 	stop_accessing_globals();
 
-	RRectOrArc_2x(proc, false, verb, rect, start_angle, arc_angle);
+	StdRRectOrArc_hi(proc, false, verb, rect, start_angle, arc_angle);
 }
 
-static pascal void PolyOrRgn_2x(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle obj) {
+static pascal void StdPolyOrRgn_hi(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle obj) {
 	port_state state;
 	GrafPtr port;
 	obj_handle obj_2x;
@@ -384,27 +397,27 @@ static pascal void PolyOrRgn_2x(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle
 	}
 }
 
-static pascal void Poly_2x(GrafVerb verb, obj_handle poly) {
+static pascal void StdPoly_hi(GrafVerb verb, obj_handle poly) {
 	PolyProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Poly;
+	proc = g_procs_lo.StdPoly;
 	stop_accessing_globals();
 
-	PolyOrRgn_2x(proc, verb, poly);
+	StdPolyOrRgn_hi(proc, verb, poly);
 }
 
-static pascal void Rgn_2x(GrafVerb verb, obj_handle rgn) {
+static pascal void StdRgn_hi(GrafVerb verb, obj_handle rgn) {
 	RgnProcPtr proc;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Rgn;
+	proc = g_procs_lo.StdRgn;
 	stop_accessing_globals();
 
-	PolyOrRgn_2x(proc, verb, rgn);
+	StdPolyOrRgn_hi(proc, verb, rgn);
 }
 
-static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
+static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
 	port_state state;
 	BitsProcPtr proc;
 	GrafPtr port;
@@ -412,7 +425,7 @@ static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, sho
 	Rect new_dst_rect;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.Bits;
+	proc = g_procs_lo.StdBits;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -436,13 +449,13 @@ static pascal void Bits_2x(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, sho
 	}
 }
 
-static pascal short TxMeas_2x(short byte_count, Ptr text_buf, Point *numer, Point *denom, FontInfo *info) {
+static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, Point *denom, FontInfo *info) {
 	TxMeasProcPtr proc;
 	GrafPtr port;
 	short width;
 
 	start_accessing_globals();
-	proc = g_std_qdprocs.TxMeas;
+	proc = g_procs_lo.StdTxMeas;
 	stop_accessing_globals();
 
 	GetPort(&port);
@@ -465,53 +478,53 @@ static ProcPtr set_toolbox_trap(ProcPtr new_proc, short trap) {
 	return old_proc;
 }
 
-#define patch_qdproc(name) \
-	g_std_qdprocs.name = set_toolbox_trap(name##_2x, _Std##name)
+#define patch_trap(name) \
+	g_procs_lo.name = set_toolbox_trap(name##_hi, _##name)
 
-#define unpatch_qdproc(name) \
-	set_toolbox_trap(g_std_qdprocs.name, _Std##name)
+#define unpatch_trap(name) \
+	set_toolbox_trap(g_procs_lo.name, _##name)
 
 void init_qdprocs(void) {
 #ifdef USE_TRAP_PATCHING
 	remember_globals();
-	patch_qdproc(Text);
-	patch_qdproc(Line);
-	patch_qdproc(Rect);
-	patch_qdproc(RRect);
-	patch_qdproc(Oval);
-	patch_qdproc(Arc);
-	patch_qdproc(Poly);
-	patch_qdproc(Rgn);
-	patch_qdproc(Bits);
-	patch_qdproc(TxMeas);
+	patch_trap(StdText);
+	patch_trap(StdLine);
+	patch_trap(StdRect);
+	patch_trap(StdRRect);
+	patch_trap(StdOval);
+	patch_trap(StdArc);
+	patch_trap(StdPoly);
+	patch_trap(StdRgn);
+	patch_trap(StdBits);
+	patch_trap(StdTxMeas);
 #else
-	SetStdProcs((QDProcs *)&g_std_qdprocs);
-	SetStdProcs((QDProcs *)&g_qdprocs_2x);
-	g_qdprocs_2x.Text = &Text_2x;
-	g_qdprocs_2x.Line = &Line_2x;
-	g_qdprocs_2x.Rect = &Rect_2x;
-	g_qdprocs_2x.RRect = &RRect_2x;
-	g_qdprocs_2x.Oval = &Oval_2x;
-	g_qdprocs_2x.Arc = &Arc_2x;
-	g_qdprocs_2x.Poly = &Poly_2x;
-	g_qdprocs_2x.Rgn = &Rgn_2x;
-	g_qdprocs_2x.Bits = &Bits_2x;
-	g_qdprocs_2x.TxMeas = &TxMeas_2x;
+	SetStdProcs((QDProcs *)&g_procs_lo);
+	SetStdProcs((QDProcs *)&g_procs_hi);
+	g_procs_hi.StdText = &StdText_hi;
+	g_procs_hi.StdLine = &StdLine_hi;
+	g_procs_hi.StdRect = &StdRect_hi;
+	g_procs_hi.StdRRect = &StdRRect_hi;
+	g_procs_hi.StdOval = &StdOval_hi;
+	g_procs_hi.StdArc = &StdArc_hi;
+	g_procs_hi.StdPoly = &StdPoly_hi;
+	g_procs_hi.StdRgn = &StdRgn_hi;
+	g_procs_hi.StdBits = &StdBits_hi;
+	g_procs_hi.StdTxMeas = &StdTxMeas_hi;
 #endif
 }
 
 void deinit_qdprocs(void) {
 #ifdef USE_TRAP_PATCHING
-	unpatch_qdproc(Text);
-	unpatch_qdproc(Line);
-	unpatch_qdproc(Rect);
-	unpatch_qdproc(RRect);
-	unpatch_qdproc(Oval);
-	unpatch_qdproc(Arc);
-	unpatch_qdproc(Poly);
-	unpatch_qdproc(Rgn);
-	unpatch_qdproc(Bits);
-	unpatch_qdproc(TxMeas);
+	unpatch_trap(StdText);
+	unpatch_trap(StdLine);
+	unpatch_trap(StdRect);
+	unpatch_trap(StdRRect);
+	unpatch_trap(StdOval);
+	unpatch_trap(StdArc);
+	unpatch_trap(StdPoly);
+	unpatch_trap(StdRgn);
+	unpatch_trap(StdBits);
+	unpatch_trap(StdTxMeas);
 #endif
 }
 
