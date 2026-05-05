@@ -15,12 +15,12 @@ SPDX-License-Identifier: MIT
 		#define a4 a5
 	#endif
 	#define remember_globals() RememberA4()
-	#define start_accessing_globals() SetUpA4()
-	#define stop_accessing_globals() RestoreA4()
+	#define begin_accessing_globals() SetUpA4()
+	#define end_accessing_globals() RestoreA4()
 #else
 	#define remember_globals()
-	#define start_accessing_globals()
-	#define stop_accessing_globals()
+	#define begin_accessing_globals()
+	#define end_accessing_globals()
 #endif
 
 //#define k_port_is_2x 1
@@ -263,9 +263,9 @@ static pascal void StdText_hi(short byte_count, Ptr text_buf, Point numer, Point
 	TextProcPtr proc;
 	GrafPtr port;
 
-	start_accessing_globals();
+	begin_accessing_globals();
+
 	proc = g_procs_lo.StdText;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
@@ -279,6 +279,8 @@ static pascal void StdText_hi(short byte_count, Ptr text_buf, Point numer, Point
 	} else {
 		(proc)(byte_count, text_buf, numer, denom);
 	}
+
+	end_accessing_globals();
 }
 
 static pascal void StdLine_hi(Point end_point) {
@@ -287,9 +289,9 @@ static pascal void StdLine_hi(Point end_point) {
 	GrafPtr port;
 	Point end_point_2x;
 
-	start_accessing_globals();
+	begin_accessing_globals();
+
 	proc = g_procs_lo.StdLine;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
@@ -302,6 +304,8 @@ static pascal void StdLine_hi(Point end_point) {
 	} else {
 		(proc)(end_point);
 	}
+
+	end_accessing_globals();
 }
 
 static pascal void StdRectOrOval_hi(RectOrOvalProcPtr proc, GrafVerb verb, Rect rect) {
@@ -320,23 +324,19 @@ static pascal void StdRectOrOval_hi(RectOrOvalProcPtr proc, GrafVerb verb, Rect 
 }
 
 static pascal void StdRect_hi(GrafVerb verb, Rect rect) {
-	RectProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdRect;
-	stop_accessing_globals();
+	StdRectOrOval_hi(g_procs_lo.StdRect, verb, rect);
 
-	StdRectOrOval_hi(proc, verb, rect);
+	end_accessing_globals();
 }
 
 static pascal void StdOval_hi(GrafVerb verb, Rect rect) {
-	OvalProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdOval;
-	stop_accessing_globals();
+	StdRectOrOval_hi(g_procs_lo.StdOval, verb, rect);
 
-	StdRectOrOval_hi(proc, verb, rect);
+	end_accessing_globals();
 }
 
 static pascal void StdRRectOrArc_hi(RRectOrArcProcPtr proc, Boolean shorts_2x, GrafVerb verb, Rect rect, short short1, short short2) {
@@ -359,23 +359,19 @@ static pascal void StdRRectOrArc_hi(RRectOrArcProcPtr proc, Boolean shorts_2x, G
 }
 
 static pascal void StdRRect_hi(GrafVerb verb, Rect rect, short oval_width, short oval_height) {
-	RRectProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdRRect;
-	stop_accessing_globals();
+	StdRRectOrArc_hi(g_procs_lo.StdRRect, true, verb, rect, oval_width, oval_height);
 
-	StdRRectOrArc_hi(proc, true, verb, rect, oval_width, oval_height);
+	end_accessing_globals();
 }
 
 static pascal void StdArc_hi(GrafVerb verb, Rect rect, short start_angle, short arc_angle) {
-	ArcProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdArc;
-	stop_accessing_globals();
+	StdRRectOrArc_hi(g_procs_lo.StdArc, false, verb, rect, start_angle, arc_angle);
 
-	StdRRectOrArc_hi(proc, false, verb, rect, start_angle, arc_angle);
+	end_accessing_globals();
 }
 
 static pascal void StdPolyOrRgn_hi(PolyOrRgnProcPtr proc, GrafVerb verb, obj_handle obj) {
@@ -398,23 +394,19 @@ static pascal void StdPolyOrRgn_hi(PolyOrRgnProcPtr proc, GrafVerb verb, obj_han
 }
 
 static pascal void StdPoly_hi(GrafVerb verb, obj_handle poly) {
-	PolyProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdPoly;
-	stop_accessing_globals();
+	StdPolyOrRgn_hi(g_procs_lo.StdPoly, verb, poly);
 
-	StdPolyOrRgn_hi(proc, verb, poly);
+	end_accessing_globals();
 }
 
 static pascal void StdRgn_hi(GrafVerb verb, obj_handle rgn) {
-	RgnProcPtr proc;
+	begin_accessing_globals();
 
-	start_accessing_globals();
-	proc = g_procs_lo.StdRgn;
-	stop_accessing_globals();
+	StdPolyOrRgn_hi(g_procs_lo.StdRgn, verb, rgn);
 
-	StdPolyOrRgn_hi(proc, verb, rgn);
+	end_accessing_globals();
 }
 
 static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, short mode, RgnHandle mask_rgn) {
@@ -424,9 +416,9 @@ static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, 
 	Rect new_src_rect;
 	Rect new_dst_rect;
 
-	start_accessing_globals();
+	begin_accessing_globals();
+
 	proc = g_procs_lo.StdBits;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_bits_2x(src_bits)) {
@@ -447,6 +439,8 @@ static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, 
 	if (is_port_2x(port)) {
 		end_2x(&state);
 	}
+
+	end_accessing_globals();
 }
 
 static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, Point *denom, FontInfo *info) {
@@ -454,9 +448,9 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	GrafPtr port;
 	short width;
 
-	start_accessing_globals();
+	begin_accessing_globals();
+
 	proc = g_procs_lo.StdTxMeas;
-	stop_accessing_globals();
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
@@ -466,6 +460,8 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	} else {
 		width = (proc)(byte_count, text_buf, numer, denom, info);
 	}
+
+	end_accessing_globals();
 
 	return width;
 }
