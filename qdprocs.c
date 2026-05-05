@@ -460,7 +460,32 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	if (!g_in_StdText && is_port_2x(port)) {
 		double_point(numer, numer);
 		width = (proc)(byte_count, text_buf, numer, denom, info);
-		half_point(numer, numer);
+		if (EqualPt(*numer, *denom)) {
+			// With TrueType fonts, numer and denom are changed to be equal,
+			// and width and info are scaled by the ratio of the numer/denom
+			// we originally passed in.
+			// Example:
+			// txSize: 12
+			// Input numer/denom: (2,2)/(1,1)
+			// Output numer/denom: (256,256)/(256,256)
+			// Output width: 80
+			// Output info->ascent: 24
+			width >>= 1;
+			info->ascent >>= 1;
+			info->descent >>= 1;
+			info->widMax >>= 1;
+			info->leading >>= 1;
+		} else {
+			// With non-TrueType fonts, numer and denom retain their original
+			// ratio, and width and info are returned unscaled.
+			// Example:
+			// txSize: 12
+			// Input numer/denom: (2,2)/(1,1)
+			// Output numer/denom: (512,512)/(256,256)
+			// Output width: 40
+			// Output info->ascent: 12
+			half_point(numer, numer);
+		}
 	} else {
 		width = (proc)(byte_count, text_buf, numer, denom, info);
 	}
