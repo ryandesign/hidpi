@@ -470,19 +470,21 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	return width;
 }
 
-static ProcPtr set_toolbox_trap(ProcPtr new_proc, short trap) {
+static ProcPtr set_toolbox_trap(ProcPtr new_proc, short trap, TrapType type) {
 	ProcPtr old_proc;
 
-	old_proc = (ProcPtr)NGetTrapAddress(trap, ToolTrap);
-	NSetTrapAddress((long)new_proc, trap, ToolTrap);
+	old_proc = (ProcPtr)NGetTrapAddress(trap, type);
+	NSetTrapAddress((long)new_proc, trap, type);
 	return old_proc;
 }
 
 #define patch_trap(name) \
-	g_procs_lo.name = set_toolbox_trap(name##_hi, _##name)
+	g_procs_lo.name = set_toolbox_trap(name##_hi, \
+		_##name, _##name & 0x0800 ? ToolTrap : OSTrap)
 
 #define unpatch_trap(name) \
-	set_toolbox_trap(g_procs_lo.name, _##name)
+	set_toolbox_trap(g_procs_lo.name, \
+		_##name, _##name & 0x0800 ? ToolTrap : OSTrap)
 
 void init_qdprocs(void) {
 #ifdef USE_TRAP_PATCHING
