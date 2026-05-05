@@ -82,6 +82,7 @@ static trap_procs g_procs_lo;
 static qd_procs g_procs_lo;
 static qd_procs g_procs_hi;
 #endif
+static Boolean g_in_StdText = false;
 
 // The filler field of the GrafPort seems like a nice place to stash our 2x flag
 // except that bitsProc only receives a BitMap pointer, not a GrafPtr, and not
@@ -266,6 +267,7 @@ static pascal void StdText_hi(short byte_count, Ptr text_buf, Point numer, Point
 	begin_accessing_globals();
 
 	proc = g_procs_lo.StdText;
+	g_in_StdText = true;
 
 	GetPort(&port);
 	if (is_port_2x(port)) {
@@ -279,6 +281,8 @@ static pascal void StdText_hi(short byte_count, Ptr text_buf, Point numer, Point
 	} else {
 		(proc)(byte_count, text_buf, numer, denom);
 	}
+
+	g_in_StdText = false;
 
 	end_accessing_globals();
 }
@@ -453,7 +457,7 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	proc = g_procs_lo.StdTxMeas;
 
 	GetPort(&port);
-	if (is_port_2x(port)) {
+	if (!g_in_StdText && is_port_2x(port)) {
 		double_point(numer, numer);
 		width = (proc)(byte_count, text_buf, numer, denom, info);
 		half_point(numer, numer);
