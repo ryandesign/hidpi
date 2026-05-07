@@ -174,7 +174,7 @@ static void adjust_controls(void) {
 static ControlHandle new_scrollbar(WindowPtr window) {
 	ControlHandle control;
 
-	control = NewControl(window, &window->portRect, "\p", true, 0, 0, 0, scrollBarProc, 0L);
+	control = NewControl(window, &window->portRect, "\p", false, 0, 0, 0, scrollBarProc, 0L);
 	g_scrollbar_proc = (**control).contrlDefProc;
 	return control;
 }
