@@ -435,6 +435,7 @@ static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, 
 	GrafPtr port;
 	Rect new_src_rect;
 	Rect new_dst_rect;
+	RgnHandle mask_rgn_2x;
 
 	begin_accessing_globals();
 
@@ -450,6 +451,14 @@ static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, 
 	if (is_port_2x(port)) {
 		begin_2x(&state, port, false);
 		double_rect(dst_rect, &new_dst_rect);
+		if (nil != mask_rgn) {
+			mask_rgn_2x = (RgnHandle)new_obj_2x((obj_handle)mask_rgn);
+			if (nil != mask_rgn_2x) {
+				mask_rgn = mask_rgn_2x;
+			}
+		} else {
+			mask_rgn_2x = nil;
+		}
 	} else {
 		new_dst_rect = *dst_rect;
 	}
@@ -457,6 +466,9 @@ static pascal void StdBits_hi(BitMap *src_bits, Rect *src_rect, Rect *dst_rect, 
 	(proc)(src_bits, &new_src_rect, &new_dst_rect, mode, mask_rgn);
 
 	if (is_port_2x(port)) {
+		if (mask_rgn_2x != nil) {
+			dispose_obj_2x((obj_handle)mask_rgn_2x);
+		}
 		end_2x(&state);
 	}
 
