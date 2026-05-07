@@ -9,6 +9,9 @@ SPDX-License-Identifier: MIT
 #include <Traps.h>
 #include <Values.h>
 
+// Define DEBUG_MOUSE_MOVED to flash the mouse region after every event.
+#undef DEBUG_MOUSE_MOVED
+
 #define k_beep_duration 4
 #define k_in_front ((WindowPtr)-1L)
 #define k_scrollbar_size 16
@@ -440,6 +443,22 @@ static void adjust_cursor(Point where, RgnHandle cursor_rgn) {
 		SetCursor(&qd.arrow);
 		CopyRgn(arrow_rgn, cursor_rgn);
 	}
+
+#ifdef DEBUG_MOUSE_MOVED
+	{
+		GrafPtr port;
+		long ticks;
+		int i;
+
+		GetWMgrPort(&port);
+		SetPort(port);
+		SetClip(cursor_rgn);
+		for (i = 0; i < 2; ++i) {
+			InvertRgn(cursor_rgn);
+			Delay(5, &ticks);
+		}
+	}
+#endif
 
 	if (nil != arrow_rgn) {
 		DisposeRgn(arrow_rgn);
