@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef QDPROCS_H
-#define QDPROCS_H
+#ifndef HIDPI_QDPROCS_H
+#define HIDPI_QDPROCS_H
 
 extern void set_port_2x(GrafPtr port);
 extern void init_qdprocs(void);
