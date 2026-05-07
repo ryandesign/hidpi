@@ -659,7 +659,7 @@ static void do_activate_event(EventRecord *event) {
 static void do_key_down_event(EventRecord *event) {
 	long menu_result;
 
-	if (event->modifiers & cmdKey) {
+	if (event->what != autoKey && event->modifiers & cmdKey) {
 		menu_result = MenuKey(event->message & charCodeMask);
 		do_menu(menu_result);
 	}
