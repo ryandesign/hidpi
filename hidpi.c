@@ -12,6 +12,8 @@ SPDX-License-Identifier: MIT
 // Define DEBUG_MOUSE_MOVED to flash the mouse region after every event.
 #undef DEBUG_MOUSE_MOVED
 
+#include "debug.h"
+
 #define k_beep_duration 4
 #define k_in_front ((WindowPtr)-1L)
 #define k_scrollbar_size 16
@@ -46,7 +48,8 @@ SPDX-License-Identifier: MIT
 #define i_clear 6
 
 #define r_MENU_debug 131
-#define i_syserr 1
+#define i_redraw 1
+#define i_syserr 3
 
 #define r_STRx 128
 
@@ -231,6 +234,9 @@ static Boolean do_new_window(Boolean use_qdprocs_2x) {
 
 static void do_debug_menu(short menu_id, short menu_item) {
 	switch (menu_item) {
+		case i_redraw:
+			redraw_screen();
+			break;
 		case i_syserr:
 			SysError(dsZeroDivErr);
 			break;

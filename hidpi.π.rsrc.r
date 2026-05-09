@@ -75,11 +75,15 @@ resource 'MENU' (130) {
 resource 'MENU' (131) {
 	131,
 	textMenuProc,
-	allEnabled,
+	0x7FFFFFFD,
 	enabled,
 	"Debug",
-	{	/* array: 1 elements */
+	{	/* array: 3 elements */
 		/* [1] */
+		"Redraw Screen", noIcon, "R", noMark, plain,
+		/* [2] */
+		"-", noIcon, noKey, noMark, plain,
+		/* [3] */
 		"Cause a System Error", noIcon, noKey, noMark, plain
 	}
 };
