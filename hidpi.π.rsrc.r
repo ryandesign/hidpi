@@ -80,7 +80,7 @@ resource 'MENU' (131) {
 	"Debug",
 	{	/* array: 1 elements */
 		/* [1] */
-		"System Error", noIcon, noKey, noMark, plain
+		"Cause a System Error", noIcon, noKey, noMark, plain
 	}
 };
 
