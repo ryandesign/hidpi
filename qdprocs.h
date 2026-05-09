@@ -6,8 +6,8 @@ SPDX-License-Identifier: MIT
 #ifndef HIDPI_QDPROCS_H
 #define HIDPI_QDPROCS_H
 
-extern void set_port_2x(GrafPtr port);
-extern void init_qdprocs(void);
-extern void deinit_qdprocs(void);
+void set_port_2x(GrafPtr port);
+void init_qdprocs(void);
+void deinit_qdprocs(void);
 
 #endif
