@@ -9,6 +9,10 @@ SPDX-License-Identifier: MIT
 #include <Traps.h>
 #include <Values.h>
 
+// Define DEBUG_EVENTS to show events as they occur, drawing them directly
+// to the right side of the screen like one definitely should not do.
+#undef DEBUG_EVENTS
+
 // Define DEBUG_MOUSE_MOVED to flash the mouse region after every event.
 #undef DEBUG_MOUSE_MOVED
 
@@ -828,6 +832,9 @@ static void event_loop(void) {
 				event.message = mouseMovedMessage << 24;
 			}
 		}
+#ifdef DEBUG_EVENTS
+		print_event(&event);
+#endif
 		if (got_event) {
 			do_event(&event);
 			if (g_is_in_foreground && kHighLevelEvent != event.what) {
