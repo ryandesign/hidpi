@@ -81,12 +81,12 @@ typedef struct qd_procs {
 	RgnProcPtr StdRgn;
 	BitsProcPtr StdBits;
 #ifndef USE_TRAP_PATCHING
-	ProcPtr StdComment; // unused
+	ProcPtr StdComment; // not overridden
 #endif
 	TxMeasProcPtr StdTxMeas;
 #ifndef USE_TRAP_PATCHING
-	ProcPtr StdGetPic; // unused
-	ProcPtr StdPutPic; // unused
+	ProcPtr StdGetPic; // not overridden
+	ProcPtr StdPutPic; // not overridden
 } qd_procs;
 #else
 } trap_procs;
@@ -119,6 +119,9 @@ static Boolean unset_port_2x(GrafPtr port) {
 }
 
 static Boolean is_bits_2x(BitMap *bits) {
+	// TODO: qd won't be available when we're an INIT
+	//       unless we call (or patch?) InitGraf
+	// TODO: better method needed to keep track of which bits and ports are 2x
 	return bits->baseAddr == qd.screenBits.baseAddr;
 }
 
@@ -488,6 +491,7 @@ static pascal short StdTxMeas_hi(short byte_count, Ptr text_buf, Point *numer, P
 	if (!g_in_StdText && is_port_2x(port)) {
 		double_point(numer, numer);
 		width = (proc)(byte_count, text_buf, numer, denom, info);
+		// TODO: handle differing h and v scale
 		if (EqualPt(*numer, *denom)) {
 			// With TrueType fonts, numer and denom are changed to be equal,
 			// and width and info are scaled by the ratio of the numer/denom
@@ -584,4 +588,13 @@ void deinit_qdprocs(void) {
 }
 
 // TODO: handle origin
-// TODO: handle cliprgn
+// TODO: work around buggy ROM WDEF 0 not locking title handle before calling
+//       DrawString which can result in corrupted window titles if memory moves
+//       while it's drawn, which can happen as TrueType characters are rendered
+// TODO: maintain 2x rgns as they're built rather than creating them on the fly
+//       during drawing; this will reduce the occurrence of the ROM WDEF 0 bug
+// TODO: draw 2x cursor
+// TODO: use 2x cursor position
+// TODO: convince the OS it's running at half the screen's real resolution
+// TODO: add examples with different sized text including nonstandard sizes
+//       which may reveal errors in my understanding of how text measuring works
