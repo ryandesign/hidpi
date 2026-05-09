@@ -914,6 +914,8 @@ static Boolean init(void) {
 
 	MaxApplZone();
 
+	init_qdprocs();
+
 	InitGraf((Ptr)&qd.thePort);
 	InitFonts();
 	InitWindows();
@@ -937,8 +939,8 @@ done:
 
 void main(void) {
 	if (init()) {
-		init_qdprocs();
 		event_loop();
-		deinit_qdprocs();
 	}
+
+	deinit_qdprocs();
 }

@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "debug.h"
+
 // Define USE_TRAP_PATCHING to patch traps instead of setting the 2x window's
 // qdprocs. Patching traps is the way of the future. Many of this project's
 // intended modifications require trap patching. The qdprocs method will go away
@@ -584,6 +586,7 @@ void deinit_qdprocs(void) {
 	unpatch_trap(StdRgn);
 	unpatch_trap(StdBits);
 	unpatch_trap(StdTxMeas);
+	redraw_screen();
 #endif
 }
 
