@@ -540,11 +540,11 @@ static ProcPtr set_toolbox_trap(ProcPtr new_proc, short trap, TrapType type) {
 
 #define patch_trap(name) \
 	g_procs_lo.name = set_toolbox_trap(name##_hi, \
-		_##name, _##name & 0x0800 ? ToolTrap : OSTrap)
+		_##name, get_trap_type(_##name))
 
 #define unpatch_trap(name) \
 	set_toolbox_trap(g_procs_lo.name, \
-		_##name, _##name & 0x0800 ? ToolTrap : OSTrap)
+		_##name, get_trap_type(_##name))
 
 void init_qdprocs(void) {
 #ifdef USE_TRAP_PATCHING

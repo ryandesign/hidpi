@@ -3,11 +3,12 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#include "qdprocs.h"
-
 #include <FixMath.h>
 #include <Traps.h>
 #include <Values.h>
+
+#include "macros.h"
+#include "qdprocs.h"
 
 // Define DEBUG_EVENTS to show events as they occur, drawing them directly
 // to the right side of the screen like one definitely should not do.
@@ -854,18 +855,6 @@ static short get_num_toolbox_traps(void) {
 	}
 
 	return num_traps;
-}
-
-static TrapType get_trap_type(unsigned short trap) {
-	TrapType trap_type;
-
-	if (trap & 0x0800) {
-		trap_type = ToolTrap;
-	} else {
-		trap_type = OSTrap;
-	}
-
-	return trap_type;
 }
 
 static Boolean has_trap(unsigned short trap) {
