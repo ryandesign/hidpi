@@ -913,6 +913,10 @@ fail:
 	return good;
 }
 
+static pascal void recover_from_system_error(void) {
+	ExitToShell();
+}
+
 // TODO: make scroll bars work
 // TODO: add sample controls
 // TODO: improve function names
@@ -932,7 +936,7 @@ static Boolean init(void) {
 	InitWindows();
 	InitMenus();
 	TEInit();
-	InitDialogs((ResumeProcPtr)NGetTrapAddress(_ExitToShell, ToolTrap));
+	InitDialogs((ResumeProcPtr)recover_from_system_error);
 
 	if (!init_app()) goto fail;
 
