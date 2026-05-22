@@ -98,5 +98,5 @@ export_files \
     -rez rsrc RSED \
         "$proj.π.rsrc" \
     -text TEXT KAHL \
-        "$proj.c" debug.c debug.h qdprocs.c qdprocs.h \
+        "$proj.c" debug.c debug.h macros.h qdprocs.c qdprocs.h \
     || exit $?

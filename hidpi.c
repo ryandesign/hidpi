@@ -17,6 +17,7 @@ SPDX-License-Identifier: MIT
 #undef DEBUG_MOUSE_MOVED
 
 #include "debug.h"
+#include "macros.h"
 
 #define k_beep_duration 4
 #define k_in_front ((WindowPtr)-1L)
@@ -66,9 +67,6 @@ SPDX-License-Identifier: MIT
 #define k_max_doc_height MAXSHORT
 
 #define has_128k_rom() (ROM85 >= 0)
-
-#define rect_width(rect) ((rect).right - (rect).left)
-#define rect_height(rect) ((rect).bottom - (rect).top)
 
 typedef struct app_window_rec {
 	WindowRecord window;
@@ -171,13 +169,13 @@ static void adjust_controls(void) {
 	control = ((app_window_ptr)qd.thePort)->h_scrollbar;
 	hide_and_inval_control(control);
 	MoveControl(control, -1, rect.bottom - k_scrollbar_adjust);
-	SizeControl(control, rect_width(rect) - (k_scrollbar_adjust - 2), k_scrollbar_size);
+	SizeControl(control, rect_width(&rect) - (k_scrollbar_adjust - 2), k_scrollbar_size);
 	show_and_inval_control(control);
 
 	control = ((app_window_ptr)qd.thePort)->v_scrollbar;
 	hide_and_inval_control(control);
 	MoveControl(control, rect.right - k_scrollbar_adjust, -1);
-	SizeControl(control, k_scrollbar_size, rect_height(rect) - (k_scrollbar_adjust - 2));
+	SizeControl(control, k_scrollbar_size, rect_height(&rect) - (k_scrollbar_adjust - 2));
 	show_and_inval_control(control);
 }
 
@@ -218,7 +216,7 @@ static Boolean do_new_window(Boolean use_qdprocs_2x) {
 		if (use_qdprocs_2x) {
 			set_port_2x(window);
 			rect = window->portRect;
-			SizeWindow(window, rect_width(rect) << 1, rect_height(rect) << 1, false);
+			SizeWindow(window, rect_width(&rect) << 1, rect_height(&rect) << 1, false);
 		}
 		adjust_controls();
 		ShowWindow(window);

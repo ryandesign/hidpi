@@ -107,7 +107,7 @@ import_files \
     -rez \
         "$proj.π" "$proj.π.rsrc" \
     -text \
-        "$proj.c" debug.c debug.h qdprocs.c qdprocs.h \
+        "$proj.c" debug.c debug.h macros.h qdprocs.c qdprocs.h \
     -optional \
         -macbinary \
             "$proj" \
