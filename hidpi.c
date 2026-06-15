@@ -28,8 +28,8 @@ SPDX-License-Identifier: MIT
 #define k_control_invisible 0x00
 #define k_whole_menu 0
 
-// https://web.archive.org/web/20201028143324/http://anarchistturtle.com/Quinn/WWW/HISubtleties/AnarchieMenuFeedback.html
-#define k_visual_delay 6L
+// Human Interface Note #10: Alert Box Guidelines
+#define k_visual_delay 8L
 
 #ifndef kHighLevelEvent
 #define kHighLevelEvent 23
