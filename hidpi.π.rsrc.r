@@ -3,6 +3,44 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
+resource 'ALRT' (128, purgeable) {
+	{40, 40, 125, 240},
+	128,
+	{	/* array: 4 elements */
+		/* [1] */
+		OK, visible, silent,
+		/* [2] */
+		OK, visible, silent,
+		/* [3] */
+		OK, visible, silent,
+		/* [4] */
+		OK, visible, silent
+	}
+};
+
+resource 'DITL' (128, purgeable) {
+	{	/* array DITLarray: 3 elements */
+		/* [1] */
+		{55, 131, 75, 190},
+		Button {
+			enabled,
+			"OK"
+		},
+		/* [2] */
+		{10, 20, 42, 52},
+		Icon {
+			disabled,
+			1
+		},
+		/* [3] */
+		{7, 74, 39, 190},
+		StaticText {
+			disabled,
+			"Hi!"
+		}
+	}
+};
+
 resource 'MBAR' (128, purgeable) {
 	{	/* array MenuArray: 4 elements */
 		/* [1] */
