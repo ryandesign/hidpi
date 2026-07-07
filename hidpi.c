@@ -78,8 +78,6 @@ SPDX-License-Identifier: MIT
 
 #define k_modifiers_except_cmd_mask 0xFE00
 
-#define has_128k_rom() (ROM85 >= 0)
-
 typedef struct app_window_rec {
 	WindowRecord window;
 	ControlHandle h_scrollbar;

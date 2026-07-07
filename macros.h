@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
 #define get_trap_type(TRAP) ((TRAP) & 0x0800 ? ToolTrap : OSTrap)
 
+#define has_128k_rom() (ROM85 >= 0)
+
 #define rect_width(RECT) ((RECT)->right - (RECT)->left)
 #define rect_height(RECT) ((RECT)->bottom - (RECT)->top)
 
