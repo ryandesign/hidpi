@@ -39,7 +39,7 @@ if [ -f "$dsk" ]; then
     hmount "$dsk" || exit $?
 else
     printf "Create %s\n" "$dsk"
-    dd if=/dev/zero of="$dsk" bs=1k count=800 status=none || exit $?
+    dd if=/dev/zero of="$dsk" bs=1k count=1440 status=none || exit $?
     hformat -l "$proj" "$dsk" || exit $?
 fi
 
