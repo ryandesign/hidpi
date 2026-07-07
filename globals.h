@@ -1,0 +1,126 @@
+/*
+SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandesign>
+SPDX-License-Identifier: MIT
+*/
+
+#ifndef HIDPI_GLOBALS
+#define HIDPI_GLOBALS
+
+#include "constants.h"
+
+extern Point Mouse : 0x830;
+//extern Rect CrsrPin : 0x834; // in <SysEqu.h>
+extern Rect CrsrRect : 0x83C;
+extern Cursor TheCrsr : 0x844;
+extern Ptr CrsrAddr : 0x888;
+extern Ptr CrsrSave : 0x88C;
+extern short CrsrRow : 0x8AC;
+extern Boolean CrsrVis : 0x8CC;
+extern Boolean CrsrBusy : 0x8CD;
+extern short CrsrState : 0x8D0;
+extern char CrsrObscure : 0x8D2;
+
+typedef pascal void (*void_proc_ptr)(void); 
+typedef pascal void (*ScrnBitMap_proc_ptr)(BitMap *); 
+typedef pascal void (*JScrnSize_proc_ptr)(short *, short *); 
+typedef pascal void (*JShieldCursor_proc_ptr)(short, short, short, short); 
+typedef pascal void (*JSetCursor_proc_ptr)(Point, short, Ptr, Ptr);
+typedef pascal void (*JSetCCursor_proc_ptr)(CCrsrHandle); 
+
+extern void_proc_ptr JHideCursor : 0x800;
+extern void_proc_ptr JShowCursor : 0x804;
+extern JShieldCursor_proc_ptr JShieldCursor : 0x808;
+extern JScrnSize_proc_ptr JScrnSize : 0x810;
+extern void_proc_ptr JInitCrsr : 0x814;
+extern JSetCursor_proc_ptr JSetCrsr : 0x818;
+extern void_proc_ptr JCrsrObscure : 0x81C;
+extern JSetCCursor_proc_ptr JSetCCrsr : 0x890;
+
+typedef struct
+{
+	// 2x replacement for TheCrsr.hotSpot.
+	Point hotspot_2x;
+
+	// 2x replacement for TheCrsr.data.
+	long data_2x[k_cursor_longs_2x];
+
+	// 2x replacement for TheCrsr.mask.
+	long mask_2x[k_cursor_longs_2x];
+
+	// 2x replacement for CrsrSave.
+	long save_2x[k_cursor_save_longs_2x];
+
+	Boolean cursor_changed;
+}
+data_t;
+
+/*
+typedef struct
+{
+	short offset;
+	short ignore;
+}
+offset_t;
+
+typedef union
+{
+	offset_t offset;
+	long old_address;
+}
+patch_value_t;
+*/
+
+// The layout of this struct must match each *_patch procedure, which
+// achieve this layout by starting with the "declare" macro.
+// Some functions have arguments and therefore have an added 4-byte LINK
+// instruction.
+typedef struct
+{
+	short bra;
+	short old_address[];
+}
+patch_proc_t;
+
+// The size and layout of this struct must match the patch table in patch_table.c.
+// The first short in the table is ignored and overwritten by install.
+typedef struct
+{
+	short old_address_index;
+	short routine;
+//	patch_value_t value;
+	short offset;
+}
+patch_t;
+
+typedef struct
+{
+	short bsr_gp;
+	Ptr gp;
+//	short movea;
+	short bsr_pt;
+	// The size of the struct elements up to here must match the size of the
+	// code that precedes the patch table in patch_table.c.
+//	short ignore;
+	patch_t patches[];
+}
+code_t;
+
+// This struct must match the order in which globals are declared in globals.c.
+#if __option(a4_globals)
+typedef struct
+{
+	data_t *data;
+}
+globals_t;
+#endif
+
+extern data_t *g_data;
+
+// In patch_table.c.
+#if !__option(a4_globals)
+void link_globals(void);
+#endif
+void begin_globals(long *token);
+void end_globals(long token);
+
+#endif

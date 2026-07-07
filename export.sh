@@ -94,9 +94,53 @@ export_files() {
 
 export_files \
     -rez PROJ KAHL \
-        "$proj.π" \
+        cursor-try.π \
+        hidpi.π \
+        init.π \
+        patches.π \
     -rez rsrc RSED \
-        "$proj.π.rsrc" \
+        hidpi.π.rsrc \
     -text TEXT KAHL \
-        "$proj.c" debug.c debug.h macros.h qdprocs.c qdprocs.h \
+        constants.h \
+        cursor_stuff.c \
+        cursor_stuff.h \
+        cursor-try.c \
+        debug.c \
+        debug.h \
+        globals.c \
+        globals.h \
+        hidpi.c \
+        init_data.c \
+        init_data.h \
+        init.c \
+        install.c \
+        install.h \
+        JCrsrObscure_patch.c \
+        JCrsrObscure_patch.h \
+        JHideCursor_patch.c \
+        JHideCursor_patch.h \
+        JInitCrsr_patch.c \
+        JInitCrsr_patch.h \
+        JScrnSize_patch.c \
+        JScrnSize_patch.h \
+        JSetCrsr_patch.c \
+        JSetCrsr_patch.h \
+        JShieldCursor_patch.c \
+        JShieldCursor_patch.h \
+        JShowCursor_patch.c \
+        JShowCursor_patch.h \
+        macros.h \
+        missing_traps.h \
+        patch_table.c \
+        patch_table.h \
+        qdprocs.c \
+        qdprocs.h \
+        ScrnBitMap_patch.c \
+        ScrnBitMap_patch.h \
+        system_requirements.c \
+        system_requirements.h \
+        SystemTask_patch.c \
+        SystemTask_patch.h \
+        uninstall.c \
+        uninstall.h \
     || exit $?
