@@ -139,7 +139,7 @@ static void JShowCursor_2x(void)
 			left_mask = right_mask;
 			right_mask = 0;
 		}
-		else if (which > 0)
+		if (which > 0)
 		{
 			// Partially off the right of the screen: Draw only left part of cursor.
 			right_mask = left_mask;
