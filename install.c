@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 #include "macros.h"
 
+#define k_num_old_addresses 5
+
 Boolean install(patch_t *patches)
 {
 	long unimplemented;
@@ -27,7 +29,7 @@ Boolean install(patch_t *patches)
 		short i;
 
 		patch_proc = (patch_proc_t *)((Ptr)&patch->offset + patch->offset);
-		for (i = 0; i < 4; ++i)
+		for (i = 0; i < k_num_old_addresses; ++i)
 		{
 			if (0x4E714E71 == *(long *)&patch_proc->old_address[i])
 			{
@@ -35,7 +37,11 @@ Boolean install(patch_t *patches)
 				break;
 			}
 		}
-		if (4 == i) return false;
+		if (k_num_old_addresses == i)
+		{
+			DebugStr("\ppreflight failed");
+			return false;
+		}
 
 		type = routine & 0xF000;
 		switch (type)
