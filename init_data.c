@@ -21,6 +21,6 @@ Boolean init_data(data_t *data)
 	// TODO: Color QuickDraw
 	BlockMoveData(CrsrSave, data->save_2x, sizeof(long) * rect_height(&CrsrRect));
 	CrsrBusy = false; // TODO: check if necessary
-data->cursor_changed = false;
+
 	return true;
 }

@@ -55,8 +55,8 @@ void main(void)
 	require(sizeof_code >= sizeof globals, GetHandleSize);
 
 	// Allocate a block of memory the size of the code and data.
-	combined = (code_t *)NewPtrSys(sizeof_code + sizeof *data);
-	require(combined, NewPtrSys);
+	combined = (code_t *)NewPtrSysClear(sizeof_code + sizeof *data);
+	require(combined, NewPtrSysClear);
 
 	// Copy the code into the combined block.
 	BlockMove(*code, combined, sizeof_code);
@@ -91,7 +91,7 @@ install:
 init_data:
 got_data_global:
 	DisposePtr((Ptr)combined);
-NewPtrSys:
+NewPtrSysClear:
 GetHandleSize:
 HLockHi:
 Get1Resource:

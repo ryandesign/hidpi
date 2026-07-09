@@ -242,8 +242,8 @@ void main(void)
 
 	link_globals();
 
-	g_data = (data_t *)NewPtr(sizeof *g_data);
-	require(g_data, NewPtr);
+	g_data = (data_t *)NewPtrClear(sizeof *g_data);
+	require(g_data, NewPtrClear);
 	require(init_data(g_data), init_data);
 
 #if 0
@@ -284,6 +284,6 @@ void main(void)
 
 install:
 init_data:
-NewPtr:
+NewPtrClear:
 	FlushEvents(everyEvent, 0);
 }
