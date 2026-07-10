@@ -7,6 +7,6 @@ SPDX-License-Identifier: MIT
 #define HIDPI_SCRNBITMAP_PATCH
 
 pascal void ScrnBitMap_patch(BitMap *bitmap);
-void ScrnBitMap_2x(BitMap *bitmap);
+void ScrnBitMap_big(BitMap *bitmap);
 
 #endif

@@ -49,11 +49,11 @@ static void JShowCursor_2x(void)
 	cursor_data = g_data->data_2x;
 	cursor_mask = g_data->mask_2x;
 
-	// Compute the 2x CrsrRect.
+	// Compute the big cursor rect.
 	{
 		Rect screen_rect;
 
-		get_screen_rect(&screen_rect);
+		get_screen_rect_big(&screen_rect);
 
 		left = k_scale * Mouse.h - g_data->hotspot_2x.h;
 		offset = left & (k_cursor_width_2x - 1);
@@ -67,8 +67,6 @@ static void JShowCursor_2x(void)
 			{
 				--which;
 				left = min_left;
-				//mask <<= 16;
-				//offset += 16;
 			}
 		}
 
@@ -80,8 +78,6 @@ static void JShowCursor_2x(void)
 			{
 				++which;
 				left = max_left;
-				//mask >>= 16;
-				//offset += 16;
 			}
 		}
 
@@ -114,7 +110,7 @@ static void JShowCursor_2x(void)
 		}
 	}
 
-	// Save the new cursor rect.
+	// Save the new big cursor rect.
 	CrsrRect.top = top;
 	CrsrRect.left = left;
 	CrsrRect.bottom = top + height;

@@ -21,7 +21,7 @@ pascal void ScrnBitMap_patch(BitMap *bitmap)
 	*(long *)&botRight(bitmap->bounds) /= k_scale;
 }
 
-void ScrnBitMap_2x(BitMap *bitmap)
+void ScrnBitMap_big(BitMap *bitmap)
 {
 	ScrnBitMap_patch(bitmap);
 	*(long *)&topLeft(bitmap->bounds) *= k_scale;
