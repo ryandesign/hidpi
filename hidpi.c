@@ -190,7 +190,7 @@ static void draw_default_button_outline(DialogPtr dialog) {
 	PenState pen_state;
 
 	GetDItem(dialog, ok, &kind, &handle, &rect);
-	if ((ctrlItem | btnCtrl) != kind) return;
+	require((ctrlItem | btnCtrl) == kind, GetDItem);
 
 	GetPort(&saved_port);
 	SetPort(dialog);
@@ -201,6 +201,9 @@ static void draw_default_button_outline(DialogPtr dialog) {
 	FrameRoundRect(&rect, 16, 16);
 	SetPenState(&pen_state);
 	SetPort(saved_port);
+
+GetDItem:
+	;
 }
 
 // Identify keypresses that should invoke the OK button.
@@ -426,16 +429,20 @@ static void do_debug_menu(short menu_id, short menu_item) {
 }
 
 static void do_edit_menu(short menu_id, short menu_item) {
-	if (!SystemEdit(menu_item - 1)) {
-		switch (menu_item) {
-			case i_undo:
-			case i_cut:
-			case i_copy:
-			case i_paste:
-			case i_clear:
-				break;
-		}
+	nrequire(SystemEdit(menu_item - 1), SystemEdit);
+
+	switch (menu_item)
+	{
+		case i_undo:
+		case i_cut:
+		case i_copy:
+		case i_paste:
+		case i_clear:
+			break;
 	}
+
+SystemEdit:
+	;
 }
 
 static void do_file_menu(short menu_id, short menu_item) {
@@ -459,12 +466,15 @@ static void do_desk_accessory(short menu_id, short menu_item) {
 	Str255 da_name;
 
 	menu = GetMHandle(menu_id);
-	if (nil != menu) {
-		GetItem(GetMHandle(menu_id), menu_item, da_name);
-		GetPort(&saved_port);
-		OpenDeskAcc(da_name);
-		SetPort(saved_port);
-	}
+	require(menu, GetMHandle);
+
+	GetItem(GetMHandle(menu_id), menu_item, da_name);
+	GetPort(&saved_port);
+	OpenDeskAcc(da_name);
+	SetPort(saved_port);
+
+GetMHandle:
+	;
 }
 
 static void do_about(void) {
@@ -860,17 +870,20 @@ static void do_grow_window(WindowPtr window, EventRecord *event) {
 
 	SetRect(&rect, k_min_doc_width, k_min_doc_height, k_max_doc_width, k_max_doc_height);
 	size = GrowWindow(window, event->where, &rect);
-	if (0L != size) {
-		GetPort(&saved_port);
-		SetPort(window);
+	require(size, GrowWindow);
 
-		inval_grow_icon();
-		SizeWindow(window, LoWord(size), HiWord(size), true);
-		inval_grow_icon();
-		adjust_controls();
+	GetPort(&saved_port);
+	SetPort(window);
 
-		SetPort(saved_port);
-	}
+	inval_grow_icon();
+	SizeWindow(window, LoWord(size), HiWord(size), true);
+	inval_grow_icon();
+	adjust_controls();
+
+	SetPort(saved_port);
+
+GrowWindow:
+	;
 }
 
 static void do_mouse_down_event(EventRecord *event) {
@@ -1063,7 +1076,7 @@ static Boolean init_app(void) {
 	SysEnvRec env;
 
 	menubar = GetNewMBar(r_mbar);
-	if (nil == menubar) goto fail;
+	require(menubar, GetNewMBar);
 	SetMenuBar(menubar);
 	DisposeHandle(menubar);
 
@@ -1078,7 +1091,7 @@ static Boolean init_app(void) {
 
 	good = true;
 
-fail:
+GetNewMBar:
 	return good;
 }
 
@@ -1089,12 +1102,11 @@ static pascal void recover_from_system_error(void) {
 // TODO: make scroll bars work
 // TODO: add sample controls
 // TODO: improve function names
-// TODO: CrsrPin
 
 static Boolean init(void) {
 	Boolean good = false;
 
-	if (!has_128k_rom()) goto fail;
+	require(has_128k_rom(), has_128k_rom);
 
 	MaxApplZone();
 
@@ -1107,14 +1119,16 @@ static Boolean init(void) {
 	TEInit();
 	InitDialogs((ResumeProcPtr)recover_from_system_error);
 
-	if (!init_app()) goto fail;
+	require(init_app(), init_app);
 
 	InitCursor();
 	FlushEvents(everyEvent & ~diskEvt, 0);
 	good = true;
 	goto done;
 
-fail:
+init_app:
+	deinit_qdprocs();
+has_128k_rom:
 	SysBeep(k_beep_duration);
 
 done:
@@ -1122,9 +1136,11 @@ done:
 }
 
 void main(void) {
-	if (init()) {
-		event_loop();
-	}
+	require(init(), init);
 
+	event_loop();
 	deinit_qdprocs();
+
+init:
+	;
 }
