@@ -5,6 +5,7 @@ SPDX-License-Identifier: MIT
 
 #include <FixMath.h>
 #include <Script.h>
+#include <setjmp.h>
 #include <Traps.h>
 #include <Values.h>
 
@@ -1003,12 +1004,21 @@ static unsigned long get_sleep(void) {
 	return sleep;
 }
 
+static jmp_buf jmp;
+
 static void event_loop(void) {
 	Boolean got_event;
 	EventRecord event;
 	RgnHandle cursor_rgn;
 
 	cursor_rgn = NewRgn();
+
+	if (setjmp(jmp))
+	{
+		// The user chose to continue after a System Error, so redraw the
+		// screen to erase the System Error box.
+		redraw_screen();
+	}
 
 	while (!g_done) {
 		adjust_menus();
@@ -1096,7 +1106,7 @@ GetNewMBar:
 }
 
 static pascal void recover_from_system_error(void) {
-	ExitToShell();
+	longjmp(jmp, 1);
 }
 
 // TODO: make scroll bars work
