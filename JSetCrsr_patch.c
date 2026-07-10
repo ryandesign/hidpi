@@ -15,10 +15,14 @@ static void JSetCrsr_2x(Point hotspot, short height, Ptr data, Ptr mask);
 
 pascal void JSetCrsr_patch(Point hotspot, short height, Ptr data, Ptr mask)
 {
+	long token;
+
 	declare(old);
 
 	save_regs();
+	begin_globals(&token);
 	JSetCrsr_2x(hotspot, height, data, mask);
+	end_globals(token);
 	restore_regs();
 }
 
@@ -61,11 +65,7 @@ static void JSetCrsr_2x(Point hotspot, short height, Ptr data, Ptr mask)
 		TheCrsr.hotSpot = hotspot;
 		if (!bits_changed)
 		{
-			long token;
-
-			begin_globals(&token);
 			sync_hotspot_2x();
-			end_globals(token);
 			JHideCursor_patch();
 			JShowCursor_patch();
 		}
@@ -73,11 +73,7 @@ static void JSetCrsr_2x(Point hotspot, short height, Ptr data, Ptr mask)
 
 	if (bits_changed)
 	{
-		long token;
-
-		begin_globals(&token);
 		g_data->cursor_changed = true;
-		end_globals(token);
 	}
 
 #if 0
@@ -124,7 +120,7 @@ static void JSetCrsr_2x(Point hotspot, short height, Ptr data, Ptr mask)
 	if (bits_changed || hotspot_changed)
 	{
 		JHideCursor_patch();
-		jshow_cursor_2x();
+		JShowCursor_patch();
 	}
 #endif
 }
