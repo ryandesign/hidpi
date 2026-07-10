@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 #include "constants.h"
 #include "cursor_stuff.h"
+#include "debigulate.h"
 #include "globals.h"
 #include "macros.h"
 
@@ -14,37 +15,42 @@ static void JShowCursor_2x(void);
 
 pascal void JShowCursor_patch(void)
 {
+	long token;
+
 	declare(old);
 
 	CrsrBusy = true;
 
-	require(++CrsrState >= 0, CrsrState);
+	save_regs();
+	begin_globals(&token);
+
+	++CrsrState;
+	debigulate();
+	require(CrsrState >= 0, CrsrState);
 
 	CrsrState = 0;
 
 	nrequire(CrsrVis, CrsrVis);
 
-	save_regs();
 	JShowCursor_2x();
-	restore_regs();
 
 	CrsrVis = true;
 
 CrsrVis:
 CrsrState:
+	end_globals(token);
+	restore_regs();
+
 	CrsrBusy = false;
 }
 
 // TODO: Review register use in this function.
 static void JShowCursor_2x(void)
 {
-	long token;
 	register long *cursor_data;
 	register long *cursor_mask;
 	register short height, offset;
 	short left, top, which = 0;
-
-	begin_globals(&token);
 
 	cursor_data = g_data->data_2x;
 	cursor_mask = g_data->mask_2x;
@@ -210,6 +216,4 @@ static void JShowCursor_2x(void)
 		}
 		while (--height);
 	}
-
-	end_globals(token);
 }

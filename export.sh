@@ -105,8 +105,14 @@ export_files \
         cursor_stuff.c \
         cursor_stuff.h \
         cursor-try.c \
+        debigulate.c \
+        debigulate.h \
         debug.c \
         debug.h \
+        embiggen.c \
+        embiggen.h \
+        FillRect_patch.c \
+        FillRect_patch.h \
         globals.c \
         globals.h \
         hidpi.c \
@@ -137,6 +143,8 @@ export_files \
         qdprocs.h \
         ScrnBitMap_patch.c \
         ScrnBitMap_patch.h \
+        ScrollRect_patch.c \
+        ScrollRect_patch.h \
         system_requirements.c \
         system_requirements.h \
         SystemTask_patch.c \

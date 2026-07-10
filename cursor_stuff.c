@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 #include "cursor_stuff.h"
 
 #include "constants.h"
+#include "embiggen.h"
 #include "globals.h"
 #include "JHideCursor_patch.h"
 #include "JShowCursor_patch.h"
@@ -46,29 +47,6 @@ void sync_hotspot_2x(void)
 	*(long *)&g_data->hotspot_2x = *(long *)&TheCrsr.hotSpot * k_scale;
 }
 
-static void enlarge_cursor(void)
-{
-	BitMap src_bits, dst_bits;
-
-	src_bits.rowBytes = k_cursor_rowbytes;
-	dst_bits.rowBytes = k_cursor_rowbytes_2x;
-
-	src_bits.baseAddr = (Ptr)&TheCrsr.data;
-	dst_bits.baseAddr = (Ptr)g_data->data_2x;
-
-	SetRect(&src_bits.bounds, 0, 0, k_cursor_width, 2 * k_cursor_height);
-	SetRect(&dst_bits.bounds, 0, 0, k_cursor_width_2x, 2 * k_cursor_height_2x);
-
-	CopyBits(&src_bits, &dst_bits, &src_bits.bounds, &dst_bits.bounds, srcCopy, nil);
-
-/*
-	OffsetRect(&src_bits.bounds, 0, k_cursor_height);
-	OffsetRect(&dst_bits.bounds, 0, k_cursor_height_2x);
-
-	CopyBits(&src_bits, &dst_bits, &src_bits.bounds, &dst_bits.bounds, notSrcCopy, nil);
-*/
-}
-
 void load_cursor_2x(void)
 {
 	//long final_ticks;
@@ -83,7 +61,7 @@ void load_cursor_2x(void)
 	}
 	else
 	{
-		enlarge_cursor();
+		embiggen_cursor();
 	}
 
 	sync_hotspot_2x();

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "FillRect_patch.h"
 #include "JCrsrObscure_patch.h"
 #include "JInitCrsr_patch.h"
 #include "JHideCursor_patch.h"
@@ -15,6 +16,7 @@ SPDX-License-Identifier: MIT
 #include "JShieldCursor_patch.h"
 #include "JShowCursor_patch.h"
 #include "ScrnBitMap_patch.h"
+#include "ScrollRect_patch.h"
 #include "SystemTask_patch.h"
 
 // Similar to "SP" for "stack pointer", "GP" is "globals pointer": the register
@@ -59,6 +61,8 @@ extern begin_func(get_patch_table)
 		; jmp instructions here but can't figure out how else to get THINK C to
 		; assemble the low-memory address using this symbol and the space used
 		; by the jmp instruction is used by install().
+		dc.l	_FillRect
+		dc.w	FillRect_patch
 		jmp		JCrsrObscure
 		dc.w	JCrsrObscure_patch
 		jmp		JHideCursor
@@ -77,6 +81,8 @@ extern begin_func(get_patch_table)
 		dc.w	JShowCursor_patch
 		dc.l	_ScrnBitMap
 		dc.w	ScrnBitMap_patch
+		dc.l	_ScrollRect
+		dc.w	ScrollRect_patch
 		dc.l	_SystemTask
 		dc.w	SystemTask_patch
 		dc.l	0				; End of patch table.
@@ -107,4 +113,6 @@ extern begin_func(end_globals)
 		move.l	4(sp), gp		; Restore GP from token.
 end_func(end_globals, rts)
 	}
+
+	// The rts that THINK C inserts here are not reached.
 }

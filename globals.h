@@ -19,6 +19,7 @@ extern Boolean CrsrVis : 0x8CC;
 extern Boolean CrsrBusy : 0x8CD;
 extern short CrsrState : 0x8D0;
 extern char CrsrObscure : 0x8D2;
+extern Rect Scratch8 : 0x9FA;
 
 typedef pascal void (*void_proc_ptr)(void); 
 typedef pascal void (*ScrnBitMap_proc_ptr)(BitMap *); 
@@ -36,6 +37,24 @@ extern JSetCursor_proc_ptr JSetCrsr : 0x818;
 extern void_proc_ptr JCrsrObscure : 0x81C;
 extern JSetCCursor_proc_ptr JSetCCrsr : 0x890;
 
+enum
+{
+	t_none,
+	t_PointPtr,
+	t_RectPtr,
+	t_RgnHandle
+};
+
+typedef struct
+{
+	short type;
+	void *item;
+	void *orig_item;
+}
+debigulation_t;
+
+#define k_max_debigulations 4
+
 typedef struct
 {
 	// 2x replacement for TheCrsr.hotSpot.
@@ -49,6 +68,10 @@ typedef struct
 
 	// 2x replacement for CrsrSave.
 	long save_2x[k_cursor_save_longs_2x];
+
+	debigulation_t debigulations[k_max_debigulations];
+	short num_debigulations;
+	short debigulate_crsrstate;
 
 	Boolean cursor_changed;
 }
