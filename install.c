@@ -59,6 +59,11 @@ Boolean install(patch_t *patches)
 	// Hide the 1x cursor.
 	HideCursor();
 
+	// Set the still-hidden cursor to anything that's not the default arrow
+	// cursor. Eventually, someone will call InitCursor to set it back to
+	// the arrow which will load the big cursor properly.
+	SetCursor((CursPtr)patches);
+
 	unimplemented = GetToolTrapAddress(_Unimplemented);
 	patch = patches;
 
