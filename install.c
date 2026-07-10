@@ -56,6 +56,9 @@ Boolean install(patch_t *patches)
 		++patch;
 	}
 
+	// Hide the 1x cursor.
+	HideCursor();
+
 	unimplemented = GetToolTrapAddress(_Unimplemented);
 	patch = patches;
 
