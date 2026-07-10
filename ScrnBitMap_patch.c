@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 #include "ScrnBitMap_patch.h"
 
 #include "constants.h"
+#include "debigulate.h"
+#include "embiggen.h"
 #include "globals.h"
 #include "macros.h"
 
@@ -15,15 +17,19 @@ pascal void ScrnBitMap_patch(BitMap *bitmap)
 
 	declare(old);
 
+	save_regs();
+
 	movea(old, old_ScrnBitMap);
 	old_ScrnBitMap(bitmap);
-	*(long *)&topLeft(bitmap->bounds) /= k_scale;
-	*(long *)&botRight(bitmap->bounds) /= k_scale;
+	debigulate_rect(&bitmap->bounds);
+
+	restore_regs();
 }
 
 void ScrnBitMap_big(BitMap *bitmap)
 {
+	// Surely this can be structured better. It's silly to debigulate
+	// and then immediately rebigulate.
 	ScrnBitMap_patch(bitmap);
-	*(long *)&topLeft(bitmap->bounds) *= k_scale;
-	*(long *)&botRight(bitmap->bounds) *= k_scale;
+	embiggen_rect(&bitmap->bounds);
 }
