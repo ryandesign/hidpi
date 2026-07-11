@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 
 #include "macros.h"
 #include "qdprocs.h"
+#include "system_requirements.h"
 
 // Define DEBUG_EVENTS to show events as they occur, drawing them directly
 // to the right side of the screen like one definitely should not do.
@@ -1085,14 +1086,20 @@ static Boolean init_app(void) {
 	MenuHandle menu;
 	SysEnvRec env;
 
+	// Ensure system requirements are met.
+	require(system_requirements_met(), system_requirements_met);
+
+	// Load menu bar.
 	menubar = GetNewMBar(r_mbar);
 	require(menubar, GetNewMBar);
 	SetMenuBar(menubar);
 	DisposeHandle(menubar);
 
+	// Add Apple menu items.
 	menu = GetMHandle(r_MENU_apple);
 	if (nil != menu) AddResMenu(menu, 'DRVR');
 
+	// Cache system capabilities in globals.
 	SysEnvirons(curSysEnvVers, &env);
 	g_system_version = env.systemVersion;
 	g_has_color_quickdraw = env.hasColorQD;
@@ -1102,6 +1109,7 @@ static Boolean init_app(void) {
 	good = true;
 
 GetNewMBar:
+system_requirements_met:
 	return good;
 }
 
@@ -1116,11 +1124,10 @@ static pascal void recover_from_system_error(void) {
 static Boolean init(void) {
 	Boolean good = false;
 
-	require(has_128k_rom(), has_128k_rom);
-
-	MaxApplZone();
-
-	init_qdprocs();
+	if (has_128k_rom())
+	{
+		MaxApplZone();
+	}
 
 	InitGraf((Ptr)&qd.thePort);
 	InitFonts();
@@ -1131,14 +1138,14 @@ static Boolean init(void) {
 
 	require(init_app(), init_app);
 
+	init_qdprocs();
+
 	InitCursor();
 	FlushEvents(everyEvent & ~diskEvt, 0);
 	good = true;
 	goto done;
 
 init_app:
-	deinit_qdprocs();
-has_128k_rom:
 	SysBeep(k_beep_duration);
 
 done:
