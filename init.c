@@ -82,6 +82,9 @@ void main(void)
 
 	// Data will be after the code.
 	data = (data_t *)((Ptr)combined + sizeof_code);
+	// TODO: Align the data to start at a multiple of 4, possibly by
+	// moving the data in front of the code. (Blocks from NewPtr and
+	// NewHandle are already aligned.)
 
 	// Insider info: THINK C puts globals at the end of the code resource.
 	globals = (globals_t *)((Ptr)data - sizeof *globals);
@@ -98,6 +101,9 @@ void main(void)
 
 	// Install the patches and fill in the old routine addresses.
 	require(install(patches), install);
+	// TODO: Separate preflight from install. Make preflight return the
+	// size of the patch table and don't include it when BlockMoving the
+	// code. Requires moving the globals pointer after the patch table.
 
 	// Done!
 	icon = r_cicn_good;
