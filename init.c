@@ -17,6 +17,10 @@ SPDX-License-Identifier: MIT
 #define r_cicn_good 128
 #define r_cicn_bad 129
 
+#define k_shift_key_bit 0x1
+#define k_1_key_bit 0x400
+#define k_2_key_bit 0x800
+
 void main(void)
 {
 	KeyMap keymap;
@@ -27,20 +31,32 @@ void main(void)
 	globals_t *globals;
 	patch_t *patches;
 	short icon = r_cicn_bad;
-	register long keys;
 
 	// Ensure the mouse button isn't being held down.
 	nrequire(Button(), Button);
 
 	// Ensure the Shift key isn't being held down.
 	GetKeys(keymap);
-	nrequire(keymap[1] & 1, GetKeys);
-
-	// Ensure the 1 key isn't being held down.
-	nrequire(keymap[0] & 0x400, GetKeys);
+	nrequire(keymap[1] & k_shift_key_bit, GetKeys);
 
 	// Ensure system requirements are met.
 	require(system_requirements_met(), system_requirements_met);
+
+	// During development, require the user to press 1 at startup to disable
+	// the INIT or 2 to enable it. If they don't within 2 seconds, disable it.
+	// TODO: Remove.
+	{
+		long end_ticks = TickCount() + 2 * 60;
+
+		do
+		{
+			GetKeys(keymap);
+		}
+		while (0 == (keymap[0] & (k_1_key_bit | k_2_key_bit)) && TickCount() < end_ticks);
+
+		// Ensure the 2 key is being held down.
+		require(keymap[0] & k_2_key_bit, GetKeys);
+	}
 
 	// Get the resource containing the patch code.
 	code = (code_t **)Get1Resource(r_patch_type, r_patch);
