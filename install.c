@@ -101,8 +101,13 @@ Boolean install(patch_t *patches)
 		++patch;
 	}
 
-	*(long *)&topLeft(CrsrPin) /= k_scale;
-	*(long *)&botRight(CrsrPin) /= k_scale;
+	// TODO: Use debigulate_rect(), except that I don't want to bring the whole
+	// debigulate.c into init.π just for this.
+	// TODO: Find the more correct place to adjust CrsrPin.
+	CrsrPin.top /= k_scale;
+	CrsrPin.left /= k_scale;
+	CrsrPin.bottom /= k_scale;
+	CrsrPin.right /= k_scale;
 
 	return true;
 }

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "embiggen.h"
 #include "macros.h"
 
 void uninstall(patch_t *patches)
@@ -41,6 +42,6 @@ void uninstall(patch_t *patches)
 		++patch;
 	}
 
-	*(long *)&topLeft(CrsrPin) *= k_scale;
-	*(long *)&botRight(CrsrPin) *= k_scale;
+	// TODO: Find the more correct place to adjust CrsrPin.
+	embiggen_rect(&CrsrPin);
 }
