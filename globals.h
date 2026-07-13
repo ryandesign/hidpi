@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
 #include "constants.h"
 
+extern Point MTemp : 0x828;
+extern Point RawMouse : 0x82C;
 extern Point Mouse : 0x830;
 //extern Rect CrsrPin : 0x834; // in <SysEqu.h>
 extern Rect CrsrRect : 0x83C;
@@ -17,6 +19,8 @@ extern Ptr CrsrSave : 0x88C;
 extern short CrsrRow : 0x8AC;
 extern Boolean CrsrVis : 0x8CC;
 extern Boolean CrsrBusy : 0x8CD;
+extern Boolean CrsrNew : 0x8CE;
+extern Boolean CrsrCouple : 0x8CF;
 extern short CrsrState : 0x8D0;
 extern char CrsrObscure : 0x8D2;
 extern Rect Scratch8 : 0x9FA;

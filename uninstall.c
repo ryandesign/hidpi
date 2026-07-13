@@ -44,4 +44,14 @@ void uninstall(patch_t *patches)
 
 	// TODO: Find the more correct place to adjust CrsrPin.
 	embiggen_rect(&CrsrPin);
+
+#if !__option(a4_globals)
+	{
+		CrsrBusy = true;
+		embiggen_point(&RawMouse);
+		MTemp = RawMouse;
+		CrsrNew = CrsrCouple;
+		CrsrBusy = false;
+	}
+#endif
 }

@@ -7,6 +7,9 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#if !__option(a4_globals)
+#include "debigulate.h"
+#endif
 #include "macros.h"
 
 #define k_num_old_addresses 5
@@ -100,6 +103,16 @@ Boolean install(patch_t *patches)
 		*(long *)&patch_proc->old_address[patch->old_address_index] = old;
 		++patch;
 	}
+
+#if !__option(a4_globals)
+	{
+		CrsrBusy = true;
+		debigulate_point(&RawMouse);
+		MTemp = RawMouse;
+		CrsrNew = CrsrCouple;
+		CrsrBusy = false;
+	}
+#endif
 
 	// TODO: Use debigulate_rect(), except that I don't want to bring the whole
 	// debigulate.c into init.π just for this.
