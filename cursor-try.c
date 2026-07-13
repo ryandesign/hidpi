@@ -247,12 +247,7 @@ void main(void)
 	require(init_data(g_data), init_data);
 
 #if 0
-//	InitCursor();
-//	HideCursor();
 	CrsrBusy = true; // TODO: check if necessary
-//while (!Button()); while (Button());
-	enlarge_cursor();
-//while (!Button()); while (Button());
 	{
 		Point hotspot = TheCrsr.hotSpot;
 
@@ -261,7 +256,6 @@ void main(void)
 	}
 	// TODO: Color QuickDraw
 	BlockMoveData(CrsrSave, g_data->save_2x, sizeof(long) * rect_height(&CrsrRect));
-//while (!Button()); while (Button());
 	install_cursor_patches();
 	CrsrBusy = false; // TODO: check if necessary
 #endif
@@ -276,10 +270,7 @@ void main(void)
 	
 		event_loop();
 	
-		HideCursor();
-	//	uninstall_cursor_patches();
 		uninstall(patches);
-		ShowCursor();
 	}
 
 install:

@@ -16,9 +16,11 @@ void uninstall(patch_t *patches)
 	long *jump;
 	short routine;
 
+	// Hide big cursor.
+	HideCursor();
+
 	while (0 != (routine = patch->routine))
 	{
-//		long old_address = patch->value.old_address;
 		patch_proc_t *patch_proc = (patch_proc_t *)((Ptr)&patch->offset + patch->offset);
 		long old_address = *(long *)&patch_proc->old_address[patch->old_address_index];
 		short type = routine & 0xF000;
@@ -54,4 +56,7 @@ void uninstall(patch_t *patches)
 		CrsrBusy = false;
 	}
 #endif
+
+	// Show 1x cursor.
+	ShowCursor();
 }
