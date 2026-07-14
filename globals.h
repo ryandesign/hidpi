@@ -123,11 +123,9 @@ typedef struct
 {
 	short bsr_gp;
 	Ptr gp;
-//	short movea;
 	short bsr_pt;
 	// The size of the struct elements up to here must match the size of the
 	// code that precedes the patch table in patch_table.c.
-//	short ignore;
 	patch_t patches[];
 }
 code_t;
@@ -142,6 +140,11 @@ globals_t;
 #endif
 
 extern data_t *g_data;
+
+// In hidpi.c.
+#if !__option(a4_globals)
+extern Boolean g_installed;
+#endif
 
 // In patch_table.c.
 #if !__option(a4_globals)

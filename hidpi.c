@@ -16,7 +16,6 @@ SPDX-License-Identifier: MIT
 #include "patch_table.h"
 #include "qdprocs.h"
 #include "system_requirements.h"
-#include "uninstall.h"
 
 // Define DEBUG_EVENTS to show events as they occur, drawing them directly
 // to the right side of the screen like one definitely should not do.
@@ -93,6 +92,7 @@ typedef struct app_window_rec {
 typedef app_window_rec *app_window_ptr;
 
 Boolean g_done = false;
+Boolean g_installed;
 Boolean g_is_in_foreground = true;
 Boolean g_has_color_quickdraw;
 Boolean g_has_script_manager;
@@ -1146,7 +1146,8 @@ static Boolean init(void) {
 
 	init_qdprocs();
 #ifdef USE_TRAP_PATCHING
-	require(install(get_patch_table()), install);
+	g_installed = install(get_patch_table());
+	require(g_installed, install);
 #endif
 
 	InitGraf((Ptr)&qd.thePort);
@@ -1177,8 +1178,5 @@ void main(void) {
 	event_loop();
 
 init:
-#ifdef USE_TRAP_PATCHING
-	uninstall(get_patch_table());
-#endif
-	deinit_qdprocs();
+	;
 }

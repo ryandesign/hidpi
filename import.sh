@@ -121,6 +121,8 @@ import_files \
         debug.h \
         embiggen.c \
         embiggen.h \
+        ExitToShell_patch.c \
+        ExitToShell_patch.h \
         FillRect_patch.c \
         FillRect_patch.h \
         globals.c \

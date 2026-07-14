@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "ExitToShell_patch.h"
 #include "FillRect_patch.h"
 #include "JCrsrObscure_patch.h"
 #include "JInitCrsr_patch.h"
@@ -61,6 +62,10 @@ extern begin_func(get_patch_table)
 		; jmp instructions here but can't figure out how else to get THINK C to
 		; assemble the low-memory address using this symbol and the space used
 		; by the jmp instruction is used by install().
+#if !__option(a4_globals)
+		dc.l	_ExitToShell
+		dc.w	ExitToShell_patch
+#endif
 		dc.l	_FillRect
 		dc.w	FillRect_patch
 		jmp		JCrsrObscure
@@ -114,5 +119,5 @@ extern begin_func(end_globals)
 end_func(end_globals, rts)
 	}
 
-	// The rts that THINK C inserts here are not reached.
+	// The rts that THINK C inserts here is not reached.
 }
