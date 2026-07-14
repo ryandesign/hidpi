@@ -7,18 +7,9 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "constants.h"
 #include "debug.h"
 #include "macros.h"
-
-// Define USE_TRAP_PATCHING to patch traps instead of setting the 2x window's
-// qdprocs. Patching traps is the way of the future. Many of this project's
-// intended modifications require trap patching. The qdprocs method will go away
-// once trap patching works completely and this project transitions into an
-// INIT, but testing in an app is more convenient than having to restart every
-// time I change the code. In an app, the full effect of trap patching can only
-// be seen when running without MultiFinder, because under MultiFinder trap
-// patches only affect the current app.
-#undef USE_TRAP_PATCHING
 
 #ifdef USE_TRAP_PATCHING
 	// Once this project becomes an INIT, we will need to set up A4 like this

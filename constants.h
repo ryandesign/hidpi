@@ -6,7 +6,19 @@ SPDX-License-Identifier: MIT
 #ifndef HIDPI_CONSTANTS
 #define HIDPI_CONSTANTS
 
+// Define USE_TRAP_PATCHING to patch traps instead of setting the 2x window's
+// qdprocs. Patching traps is the way of the future. Many of this project's
+// intended modifications require trap patching. The qdprocs method will go away
+// once trap patching works completely and this project transitions into an
+// INIT, but testing in an app is more convenient than having to restart every
+// time I change the code. In an app, the full effect of trap patching can only
+// be seen when running without MultiFinder, because under MultiFinder trap
+// patches only affect the current app.
+#define USE_TRAP_PATCHING
+
 // TODO: finish implementing this
+// The idea was to tie this to USE_TRAP_PATCHING so that the big cursor is still
+// used when not trap patching, but its coordinates are still 1x.
 #undef SCALE_CURSOR_COORDS
 
 // TODO: Fix more code to use k_scale instead of assuming it's 2.

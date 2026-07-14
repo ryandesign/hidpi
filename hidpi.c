@@ -9,9 +9,14 @@ SPDX-License-Identifier: MIT
 #include <Traps.h>
 #include <Values.h>
 
+#include "globals.h"
+#include "init_data.h"
+#include "install.h"
 #include "macros.h"
+#include "patch_table.h"
 #include "qdprocs.h"
 #include "system_requirements.h"
+#include "uninstall.h"
 
 // Define DEBUG_EVENTS to show events as they occur, drawing them directly
 // to the right side of the screen like one definitely should not do.
@@ -1106,8 +1111,18 @@ static Boolean init_app(void) {
 	g_has_script_manager = has_trap(_ScriptUtil);
 	g_has_WaitNextEvent = has_trap(_WaitNextEvent);
 
+	// Store A5 where the patches can find it.
+	link_globals();
+
+	// Allocate and initialize global data structure.
+	g_data = (data_t *)NewPtrClear(sizeof *g_data);
+	require(g_data, NewPtrClear);
+	require(init_data(g_data), init_data);
+
 	good = true;
 
+init_data:
+NewPtrClear:
 GetNewMBar:
 system_requirements_met:
 	return good;
@@ -1129,6 +1144,11 @@ static Boolean init(void) {
 		MaxApplZone();
 	}
 
+	init_qdprocs();
+#ifdef USE_TRAP_PATCHING
+	require(install(get_patch_table()), install);
+#endif
+
 	InitGraf((Ptr)&qd.thePort);
 	InitFonts();
 	InitWindows();
@@ -1138,13 +1158,12 @@ static Boolean init(void) {
 
 	require(init_app(), init_app);
 
-	init_qdprocs();
-
 	InitCursor();
 	FlushEvents(everyEvent & ~diskEvt, 0);
 	good = true;
 	goto done;
 
+install:
 init_app:
 	SysBeep(k_beep_duration);
 
@@ -1156,8 +1175,10 @@ void main(void) {
 	require(init(), init);
 
 	event_loop();
-	deinit_qdprocs();
 
 init:
-	;
+#ifdef USE_TRAP_PATCHING
+	uninstall(get_patch_table());
+#endif
+	deinit_qdprocs();
 }
