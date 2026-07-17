@@ -1111,18 +1111,8 @@ static Boolean init_app(void) {
 	g_has_script_manager = has_trap(_ScriptUtil);
 	g_has_WaitNextEvent = has_trap(_WaitNextEvent);
 
-	// Store A5 where the patches can find it.
-	link_globals();
-
-	// Allocate and initialize global data structure.
-	g_data = (data_t *)NewPtrClear(sizeof *g_data);
-	require(g_data, NewPtrClear);
-	require(init_data(g_data), init_data);
-
 	good = true;
 
-init_data:
-NewPtrClear:
 GetNewMBar:
 system_requirements_met:
 	return good;
@@ -1146,6 +1136,15 @@ static Boolean init(void) {
 
 	init_qdprocs();
 #ifdef USE_TRAP_PATCHING
+	// Allocate and initialize global data structure.
+	g_data = (data_t *)NewPtrClear(sizeof *g_data);
+	require(g_data, NewPtrClear);
+	require(init_data(g_data), init_data);
+
+	// Store A5 where the patches can find it.
+	link_globals();
+
+	// Install patches.
 	g_installed = install(get_patch_table());
 	require(g_installed, install);
 #endif
@@ -1164,6 +1163,8 @@ static Boolean init(void) {
 	good = true;
 	goto done;
 
+NewPtrClear:
+init_data:
 install:
 init_app:
 	SysBeep(k_beep_duration);
