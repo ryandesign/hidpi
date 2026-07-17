@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "constants.h"
 #if !__option(a4_globals)
 #include "debigulate.h"
 #endif
@@ -34,7 +35,7 @@ Boolean install(patch_t *patches)
 		patch_proc = (patch_proc_t *)((Ptr)&patch->offset + patch->offset);
 		for (i = 0; i < k_num_old_addresses; ++i)
 		{
-			if (0x4E714E71 == *(long *)&patch_proc->old_address[i])
+			if (k_placeholder == *(long *)&patch_proc->old_address[i])
 			{
 				patch->old_address_index = i;
 				break;

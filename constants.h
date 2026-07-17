@@ -53,6 +53,7 @@ SPDX-License-Identifier: MIT
 #define k_cursor_save_rowlongs_2x (k_cursor_rowlongs_2x + 1)
 #define k_cursor_save_longs_2x (k_cursor_height_2x * k_cursor_save_rowlongs_2x)
 
+#define k_placeholder 0x4E714E71
 #define k_uninitialized_data 'NIL!'
 
 #endif

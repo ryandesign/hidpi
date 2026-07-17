@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 #ifndef HIDPI_MACROS_H
 #define HIDPI_MACROS_H
 
+#include "constants.h"
+
 #define get_trap_type(TRAP) ((TRAP) & 0x0800 ? ToolTrap : OSTrap)
 
 #define has_128k_rom() (ROM85 >= 0)
@@ -22,7 +24,7 @@ SPDX-License-Identifier: MIT
 #define declare_asm(SYMBOL) \
 		bra.s @0 \
 @##SYMBOL: \
-		dc.l 0x4E714E71 \
+		dc.l k_placeholder \
 @0:
 
 #define declare(SYMBOL) \
