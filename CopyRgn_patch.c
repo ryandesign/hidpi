@@ -52,21 +52,16 @@ extern CopyRgn_orig:
 static void CopyRgn_big(RgnHandle src, RgnHandle dst)
 {
 	rgnset_h srcrh, dstrh;
-	rgnset_p srcrp, dstrp;
 
 	srcrh = get_rgnset(src);
-	require(srcrh, get_rgnset_src);
+	require(srcrh, end);
 
 	dstrh = get_rgnset(dst);
-	require(dstrh, get_rgnset_dst);
+	require(dstrh, end);
 
-	srcrp = *srcrh;
-	dstrp = *dstrh;
+	CopyRgn_orig((**srcrh).copy, (**dstrh).copy);
+	CopyRgn_orig((**srcrh).big, (**dstrh).big);
 
-	CopyRgn_orig(srcrp->copy, dstrp->copy);
-	CopyRgn_orig(srcrp->big, dstrp->big);
-
-get_rgnset_dst:
-get_rgnset_src:
+end:
 	;
 }

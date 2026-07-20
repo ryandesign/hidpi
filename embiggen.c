@@ -55,11 +55,15 @@ void embiggen_rect(Rect *rect)
 void embiggen_rgn(RgnHandle src, RgnHandle dst)
 {
 	short *srcp, *dstp;
-	short count;
+	short size, count;
 
-	dstp = &((short *)*dst)[1];
+	SetHandleSize((Handle)dst, GetHandleSize((Handle)src));
+
+	dstp = (short *)*dst;
 	srcp = (short *)*src;
-	count = *srcp++ / sizeof(short);
+	size = *srcp++;
+	*dstp++ = size;
+	count = size / sizeof(short);
 	while (--count)
 	{
 		*dstp++ = embiggened_rgn_short(*srcp++);

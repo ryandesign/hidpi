@@ -50,14 +50,18 @@ static void SetEmptyRgn_big(RgnHandle rgn)
 {
 	rgnset_h rh;
 	rgnset_p rp;
+	RgnHandle copy, big;
 
 	rh = get_rgnset(rgn);
-	require(rh, get_rgnset);
+	require(rh, end);
+
 	rp = *rh;
+	copy = rp->copy;
+	big = rp->big;
 
-	SetEmptyRgn_orig(rp->copy);
-	SetEmptyRgn_orig(rp->big);
+	SetEmptyRgn_orig(copy);
+	SetEmptyRgn_orig(big);
 
-get_rgnset:
+end:
 	;
 }

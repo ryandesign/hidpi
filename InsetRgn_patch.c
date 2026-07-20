@@ -56,14 +56,18 @@ static void InsetRgn_big(RgnHandle rgn, short dh_in, short dv_in)
 	rgnset_p rp;
 	short dh = dh_in;
 	short dv = dv_in;
+	RgnHandle copy, big;
 
 	rh = get_rgnset(rgn);
-	require(rh, get_rgnset);
+	require(rh, end);
+
 	rp = *rh;
+	copy = rp->copy;
+	big = rp->big;
 
-	InsetRgn_orig(rp->copy, dh, dv);
-	InsetRgn_orig(rp->big, k_scale * dh, k_scale * dv);
+	InsetRgn_orig(copy, dh, dv);
+	InsetRgn_orig(big, k_scale * dh, k_scale * dv);
 
-get_rgnset:
+end:
 	;
 }

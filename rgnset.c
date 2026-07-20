@@ -84,8 +84,6 @@ static rgnset_h find_rgnset(RgnHandle original)
 
 static rgnset_h new_rgnset(RgnHandle original)
 {
-	app_data_h ah;
-	app_data_p ap;
 	rgnset_h rh;
 	rgnset_p rp;
 	THz zone;
@@ -104,15 +102,26 @@ static rgnset_h new_rgnset(RgnHandle original)
 	rh = (rgnset_h)NewHandle(sizeof **rh);
 	require(rh, NewHandle);
 
-	ah = find_app_data(zone);
-	ap = *ah;
+	{
+		register RgnHandle copy, big;
 
-	rp = *rh;
-	rp->original = original;
-	rp->copy = NewRgn();
-	rp->big = NewRgn();
-	rp->next = ap->rgnsets;
-	ap->rgnsets = rh;
+		copy = NewRgn();
+		big = NewRgn();
+		rp = *rh;
+		rp->original = original;
+		rp->copy = copy;
+		rp->big = big;
+	}
+
+	{
+		register app_data_h ah;
+		register app_data_p ap;
+
+		ah = find_app_data(zone);
+		ap = *ah;
+		rp->next = ap->rgnsets;
+		ap->rgnsets = rh;
+	}
 
 NewHandle:
 	SetZone(old_zone);
@@ -124,7 +133,7 @@ rgnset_h get_rgnset(RgnHandle original)
 {
 	rgnset_h rh;
 	rgnset_p rp;
-	RgnHandle copy, big;
+	RgnHandle copy;
 
 	rh = find_rgnset(original);
 	if (nil == rh)
@@ -142,9 +151,7 @@ rgnset_h get_rgnset(RgnHandle original)
 	if (!EqualRgn(original, copy))
 	{
 		CopyRgn_orig(original, copy);
-		big = rp->big;
-		SetHandleSize((Handle)big, GetHandleSize((Handle)original));
-		embiggen_rgn(original, big);
+		embiggen_rgn(original, rp->big);
 	}
 
 end:
