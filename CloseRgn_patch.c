@@ -48,22 +48,19 @@ extern CloseRgn_orig:
 
 static void CloseRgn_big(RgnHandle rgn)
 {
-//	long token;
 	rgntmp_t tmp;
 	rgnset_h rh;
 	qd_globals_t *qd;
-	GrafPtr thePort;
+	GrafPtr port;
 	long rgnSave;
 
 	qd = get_qd_globals();
-	thePort = qd->thePort;
-	get_rgnSave(rgnSave, thePort);
-	require(rgnSave, get_rgnSave);
+	port = qd->thePort;
+	get_rgnSave(rgnSave, port);
+	require(rgnSave, end);
 
 	rh = get_rgnset(rgn);
-	require(rh, get_rgnset);
-
-//	begin_globals(&token);
+	require(rh, end);
 
 	tmp = qd->rgntmp;
 	qd->rgntmp = g_data->rgntmp_big;
@@ -73,11 +70,8 @@ static void CloseRgn_big(RgnHandle rgn)
 	g_data->closed_rgnset = rh;
 	g_data->closed_rgnbuf = tmp.buf;
 
-//	end_globals(token);
+	set_rgnSave(rgnSave, port);
 
-	set_rgnSave(rgnSave, thePort);
-
-get_rgnset:
-get_rgnSave:
+end:
 	;
 }

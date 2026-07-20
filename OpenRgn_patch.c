@@ -41,25 +41,20 @@ extern OpenRgn_orig:
 
 static void OpenRgn_big(void)
 {
-//	long token;
 	qd_globals_t *qd;
-	GrafPtr thePort;
+	GrafPtr port;
 	long rgnSave;
 
 	qd = get_qd_globals();
-	thePort = qd->thePort;
-	get_rgnSave(rgnSave, thePort);
-	nrequire(rgnSave, get_rgnSave);
-
-//	begin_globals(&token);
+	port = qd->thePort;
+	get_rgnSave(rgnSave, port);
+	nrequire(rgnSave, end);
 
 	OpenRgn_orig();
 	g_data->rgntmp_big = qd->rgntmp;
 
-//	end_globals(token);
+	set_rgnSave(rgnSave, port);
 
-	set_rgnSave(rgnSave, thePort);
-
-get_rgnSave:
+end:
 	;
 }
