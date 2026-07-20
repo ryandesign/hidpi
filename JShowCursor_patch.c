@@ -59,7 +59,7 @@ static void JShowCursor_2x(void)
 	{
 		Rect screen_rect;
 
-		get_screen_rect_big(&screen_rect);
+		get_screen_rect_orig(&screen_rect);
 
 		left = k_scale * Mouse.h - g_data->hotspot_2x.h;
 		offset = left & (k_cursor_width_2x - 1);

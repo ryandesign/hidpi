@@ -11,25 +11,37 @@ SPDX-License-Identifier: MIT
 #include "globals.h"
 #include "macros.h"
 
-pascal void ScrnBitMap_patch(BitMap *bitmap)
+typedef struct
 {
-	register ScrnBitMap_proc_ptr old_ScrnBitMap;
+	long return_address;
+	BitMap *bitmap;
+}
+ScrnBitMap_stack;
 
-	declare(old);
+static void ScrnBitMap_big(BitMap *bitmap);
 
-	save_regs();
+pascal void ScrnBitMap_patch(void)
+{
+	asm
+	{
+		bra 	@start								; Skip placeholder.
+@orig	dc.l	k_placeholder						; Placeholder for old routine address.
 
-	movea(old, old_ScrnBitMap);
-	old_ScrnBitMap(bitmap);
-	debigulate_rect(&bitmap->bounds);
+@start	move.l	ScrnBitMap_stack.bitmap(sp), -(sp)	; Push bitmap pointer.
+		jsr		ScrnBitMap_big						; Call our routine.
+		addq.l	#4, sp								; Pop bitmap pointer.
 
-	restore_regs();
+		move.l	(sp)+, (sp)							; Pop caller's parameters.
+		rts											; Return to caller.
+
+extern ScrnBitMap_orig:
+		move.l	@orig, -(sp)						; Push old routine address.
+		return										; "Return" to old routine.
+	}
 }
 
-void ScrnBitMap_big(BitMap *bitmap)
+static void ScrnBitMap_big(BitMap *bitmap)
 {
-	// Surely this can be structured better. It's silly to debigulate
-	// and then immediately rebigulate.
-	ScrnBitMap_patch(bitmap);
-	embiggen_rect(&bitmap->bounds);
+	ScrnBitMap_orig(bitmap);
+	debigulate_rect(&bitmap->bounds);
 }

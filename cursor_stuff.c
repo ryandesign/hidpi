@@ -12,12 +12,12 @@ SPDX-License-Identifier: MIT
 #include "JShowCursor_patch.h"
 #include "ScrnBitMap_patch.h"
 
-void get_screen_rect_big(Rect *rect)
+void get_screen_rect_orig(Rect *rect)
 {
 	BitMap bitmap;
 
 	// TODO: Color QuickDraw
-	ScrnBitMap_big(&bitmap);
+	ScrnBitMap_orig(&bitmap);
 	*rect = bitmap.bounds;
 }
 
