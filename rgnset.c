@@ -153,18 +153,11 @@ end:
 
 qd_globals_t *get_qd_globals(void)
 {
-	register Ptr *a5_world;
-
-	// Get the application's A5: the pointer to its A5 world, which contains
-	// its globals. The global at offset zero is thePort, the last of the
-	// QuickDraw globals.
-	asm
-	{
-		movea.l	CurrentA5, a5_world;
-	}
-
+	// CurrentA5 contains the value of the application's A5 register, which is
+	// a pointer to its A5 world, which contains its globals. The global at
+	// offset zero is GrafPtr thePort, the last of the QuickDraw globals.
 	// Compute and return the address of the start of the QuickDraw globals.
-	return (qd_globals_t *)(*a5_world + sizeof(GrafPtr) - sizeof(qd_globals_t));
+	return (qd_globals_t *)(*(Ptr *)CurrentA5 + sizeof(GrafPtr) - sizeof(qd_globals_t));
 }
 
 void get_rgntmp(rgntmp_t *tmp)
