@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_RGNSET_PATCH
-#define HIDPI_RGNSET_PATCH
+#ifndef HIDPI_RGNSET_H
+#define HIDPI_RGNSET_H
 
 #include "globals.h"
 

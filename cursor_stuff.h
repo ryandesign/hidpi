@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_CURSOR_STUFF
-#define HIDPI_CURSOR_STUFF
+#ifndef HIDPI_CURSOR_STUFF_H
+#define HIDPI_CURSOR_STUFF_H
 
 void get_screen_rect_big(Rect *rect);
 void pin_hotspot(Point *hotspot);

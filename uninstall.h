@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_UNINSTALL
-#define HIDPI_UNINSTALL
+#ifndef HIDPI_UNINSTALL_H
+#define HIDPI_UNINSTALL_H
 
 #include "globals.h"
 

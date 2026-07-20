@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_EMBIGGEN
-#define HIDPI_EMBIGGEN
+#ifndef HIDPI_EMBIGGEN_H
+#define HIDPI_EMBIGGEN_H
 
 void embiggen_cursor(void);
 void embiggen_point(Point *point);

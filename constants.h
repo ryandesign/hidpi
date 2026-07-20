@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_CONSTANTS
-#define HIDPI_CONSTANTS
+#ifndef HIDPI_CONSTANTS_H
+#define HIDPI_CONSTANTS_H
 
 // Define USE_TRAP_PATCHING to patch traps instead of setting the 2x window's
 // qdprocs. Patching traps is the way of the future. Many of this project's

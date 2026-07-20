@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_PATCH_TABLE
-#define HIDPI_PATCH_TABLE
+#ifndef HIDPI_PATCH_TABLE_H
+#define HIDPI_PATCH_TABLE_H
 
 #include "globals.h"
 

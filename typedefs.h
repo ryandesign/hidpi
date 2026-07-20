@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_TYPEDEFS
-#define HIDPI_TYPEDEFS
+#ifndef HIDPI_TYPEDEFS_H
+#define HIDPI_TYPEDEFS_H
 
 typedef pascal void (*void_proc_ptr)(void);
 typedef pascal void (*JScrnSize_proc_ptr)(short *, short *);

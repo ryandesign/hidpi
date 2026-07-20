@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_DEBIGULATE
-#define HIDPI_DEBIGULATE
+#ifndef HIDPI_DEBIGULATE_H
+#define HIDPI_DEBIGULATE_H
 
 void debigulate(void);
 void debigulate_later(short first_item_type, ...);

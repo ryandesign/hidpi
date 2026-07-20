@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#ifndef HIDPI_SYSTEMTASK_PATCH
-#define HIDPI_SYSTEMTASK_PATCH
+#ifndef HIDPI_SYSTEMTASK_PATCH_H
+#define HIDPI_SYSTEMTASK_PATCH_H
 
 pascal void SystemTask_patch(void);
 
