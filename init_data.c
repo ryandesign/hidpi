@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 Boolean init_data(data_t *data)
 {
+	data->system_data_p = &data->system_data;
+
 	CrsrBusy = true; // TODO: check if necessary
 
 	{

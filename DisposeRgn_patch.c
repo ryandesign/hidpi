@@ -3,17 +3,22 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#include "ExitToShell_patch.h"
+#include "DisposeRgn_patch.h"
 
 #include "globals.h"
-#include "macros.h"
-#include "patch_table.h"
-#include "qdprocs.h"
-#include "uninstall.h"
+#include "rgnset.h"
 
-static void ExitToShell_big(void);
+typedef struct
+{
+	long saved_registers[1]; // A6
+	long return_address;
+	RgnHandle rgn;
+}
+DisposeRgn_stack;
 
-pascal void ExitToShell_patch(void)
+static void DisposeRgn_big(RgnHandle rgn);
+
+pascal void DisposeRgn_patch(void)
 {
 	asm
 	{
@@ -22,27 +27,31 @@ pascal void ExitToShell_patch(void)
 @orig	dc.l	k_placeholder					; Placeholder for old routine address.
 
 @start	jsr		begin_globals					; Activate globals.
+		addq.l	#4, sp							; Pop token address.
 
-		jsr		ExitToShell_big					; Call our routine.
+		link	a6, #0							; Create stack frame.
 
-		move.l	@token, (sp)					; Pop token address; push token.
+		move.l	DisposeRgn_stack.rgn(a6), -(sp)	; Push region.
+		jsr		DisposeRgn_big					; Call our routine.
+
+		move.l	@token, -(sp)					; Push token.
 		jsr		end_globals						; Deactivate globals.
-		addq.l	#4, sp							; Pop token.
 
-extern ExitToShell_orig:
+		unlk	a6								; Delete stack frame.
+
+extern DisposeRgn_orig:
 		move.l	@orig, -(sp)					; Push old routine address.
 		return									; "Return" to old routine.
 	}
 }
 
-static void ExitToShell_big(void)
+static void DisposeRgn_big(RgnHandle rgn)
 {
 //	long token;
 
 //	begin_globals(&token);
-#ifdef USE_TRAP_PATCHING
-	if (g_installed) uninstall(get_patch_table());
-#endif
-	deinit_qdprocs();
+
+	dispose_rgnset(rgn);
+
 //	end_globals(token);
 }

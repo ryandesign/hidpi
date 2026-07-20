@@ -3,17 +3,21 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#include "ExitToShell_patch.h"
+#include "OpenRgn_patch.h"
 
 #include "globals.h"
 #include "macros.h"
-#include "patch_table.h"
-#include "qdprocs.h"
-#include "uninstall.h"
+#include "rgnset.h"
 
-static void ExitToShell_big(void);
+typedef struct
+{
+	long return_address;
+}
+OpenRgn_stack;
 
-pascal void ExitToShell_patch(void)
+static void OpenRgn_big(void);
+
+pascal void OpenRgn_patch(void)
 {
 	asm
 	{
@@ -23,26 +27,39 @@ pascal void ExitToShell_patch(void)
 
 @start	jsr		begin_globals					; Activate globals.
 
-		jsr		ExitToShell_big					; Call our routine.
+		jsr		OpenRgn_big						; Call our routine.
 
 		move.l	@token, (sp)					; Pop token address; push token.
 		jsr		end_globals						; Deactivate globals.
 		addq.l	#4, sp							; Pop token.
 
-extern ExitToShell_orig:
+extern OpenRgn_orig:
 		move.l	@orig, -(sp)					; Push old routine address.
 		return									; "Return" to old routine.
 	}
 }
 
-static void ExitToShell_big(void)
+static void OpenRgn_big(void)
 {
 //	long token;
+	qd_globals_t *qd;
+	GrafPtr thePort;
+	long rgnSave;
+
+	qd = get_qd_globals();
+	thePort = qd->thePort;
+	get_rgnSave(rgnSave, thePort);
+	nrequire(rgnSave, get_rgnSave);
 
 //	begin_globals(&token);
-#ifdef USE_TRAP_PATCHING
-	if (g_installed) uninstall(get_patch_table());
-#endif
-	deinit_qdprocs();
+
+	OpenRgn_orig();
+	g_data->rgntmp_big = qd->rgntmp;
+
 //	end_globals(token);
+
+	set_rgnSave(rgnSave, thePort);
+
+get_rgnSave:
+	;
 }

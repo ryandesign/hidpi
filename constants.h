@@ -26,6 +26,12 @@ SPDX-License-Identifier: MIT
 // TODO: runtime scale changes (restart required)
 #define k_scale 2
 
+#define k_qd_rgn_flag 32767
+#define k_qd_max 32766
+#define k_qd_min -32768
+#define k_qd_max_big (k_qd_max / k_scale)
+#define k_qd_min_big (k_qd_min / k_scale)
+
 #ifdef SCALE_CURSOR_COORDS
 #define k_cursor_xy_multiplier k_scale
 #define k_cursor_rect_multiplier 1

@@ -9,5 +9,6 @@ SPDX-License-Identifier: MIT
 void embiggen_cursor(void);
 void embiggen_point(Point *point);
 void embiggen_rect(Rect *rect);
+void embiggen_rgn(RgnHandle src, RgnHandle dst);
 
 #endif

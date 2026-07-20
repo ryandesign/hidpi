@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 #define HIDPI_GLOBALS
 
 #include "constants.h"
+#include "typedefs.h"
 
 extern Point MTemp : 0x828;
 extern Point RawMouse : 0x82C;
@@ -25,13 +26,6 @@ extern short CrsrState : 0x8D0;
 extern char CrsrObscure : 0x8D2;
 extern Rect Scratch8 : 0x9FA;
 
-typedef pascal void (*void_proc_ptr)(void); 
-typedef pascal void (*ScrnBitMap_proc_ptr)(BitMap *); 
-typedef pascal void (*JScrnSize_proc_ptr)(short *, short *); 
-typedef pascal void (*JShieldCursor_proc_ptr)(short, short, short, short); 
-typedef pascal void (*JSetCursor_proc_ptr)(Point, short, Ptr, Ptr);
-typedef pascal void (*JSetCCursor_proc_ptr)(CCrsrHandle); 
-
 extern void_proc_ptr JHideCursor : 0x800;
 extern void_proc_ptr JShowCursor : 0x804;
 extern JShieldCursor_proc_ptr JShieldCursor : 0x808;
@@ -45,6 +39,7 @@ enum
 {
 	t_none,
 	t_PointPtr,
+	t_PolyHandle,
 	t_RectPtr,
 	t_RgnHandle
 };
@@ -61,6 +56,19 @@ debigulation_t;
 
 typedef struct
 {
+	app_data_h app_data;
+	app_data_t system_data;
+	app_data_p system_data_p;
+
+	// Temporary data for the big version of the region being defined by OpenRgn/CloseRgn.
+	rgntmp_t rgntmp_big;
+
+	// The rgnset of the region being closed by CloseRgn.
+	rgnset_h closed_rgnset;
+
+	// The temporary buffer for the region being closed by CloseRgn.
+	Handle closed_rgnbuf;
+
 	// 2x replacement for TheCrsr.hotSpot.
 	Point hotspot_2x;
 
@@ -121,9 +129,9 @@ patch_t;
 
 typedef struct
 {
-	short bsr_gp;
+	long bsr_gp;
 	Ptr gp;
-	short bsr_pt;
+	long bsr_pt;
 	// The size of the struct elements up to here must match the size of the
 	// code that precedes the patch table in patch_table.c.
 	patch_t patches[];
@@ -131,6 +139,8 @@ typedef struct
 code_t;
 
 // This struct must match the order in which globals are declared in globals.c.
+// To keep it simple and to minimize the amount of space used in the compiled
+// code for globals defaults, use as few globals as possible.
 #if __option(a4_globals)
 typedef struct
 {

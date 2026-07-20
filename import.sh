@@ -111,7 +111,13 @@ import_files \
         init.π \
         patches.π \
     -text \
+        app_data.c \
+        app_data.h \
+        CloseRgn_patch.c \
+        CloseRgn_patch.h \
         constants.h \
+        CopyRgn_patch.c \
+        CopyRgn_patch.h \
         cursor_stuff.c \
         cursor_stuff.h \
         cursor-try.c \
@@ -119,6 +125,10 @@ import_files \
         debigulate.h \
         debug.c \
         debug.h \
+        DisposeHandle_patch.c \
+        DisposeHandle_patch.h \
+        DisposeRgn_patch.c \
+        DisposeRgn_patch.h \
         embiggen.c \
         embiggen.h \
         ExitToShell_patch.c \
@@ -131,6 +141,10 @@ import_files \
         init_data.c \
         init_data.h \
         init.c \
+        InitZone_patch.c \
+        InitZone_patch.h \
+        InsetRgn_patch.c \
+        InsetRgn_patch.h \
         install.c \
         install.h \
         JCrsrObscure_patch.c \
@@ -149,18 +163,29 @@ import_files \
         JShowCursor_patch.h \
         macros.h \
         missing_traps.h \
+        OffsetRgn_patch.c \
+        OffsetRgn_patch.h \
+        OpenRgn_patch.c \
+        OpenRgn_patch.h \
         patch_table.c \
         patch_table.h \
         qdprocs.c \
         qdprocs.h \
+        rgnset.c \
+        rgnset.h \
         ScrnBitMap_patch.c \
         ScrnBitMap_patch.h \
         ScrollRect_patch.c \
         ScrollRect_patch.h \
+        SectRgn_patch.c \
+        SectRgn_patch.h \
+        SetEmptyRgn_patch.c \
+        SetEmptyRgn_patch.h \
         system_requirements.c \
         system_requirements.h \
         SystemTask_patch.c \
         SystemTask_patch.h \
+        typedefs.h \
         uninstall.c \
         uninstall.h \
     -optional \

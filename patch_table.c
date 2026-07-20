@@ -7,8 +7,14 @@ SPDX-License-Identifier: MIT
 
 #include <Traps.h>
 
+#include "CloseRgn_patch.h"
+#include "CopyRgn_patch.h"
+#include "DisposeHandle_patch.h"
+#include "DisposeRgn_patch.h"
 #include "ExitToShell_patch.h"
 #include "FillRect_patch.h"
+#include "InitZone_patch.h"
+#include "InsetRgn_patch.h"
 #include "JCrsrObscure_patch.h"
 #include "JInitCrsr_patch.h"
 #include "JHideCursor_patch.h"
@@ -16,8 +22,12 @@ SPDX-License-Identifier: MIT
 #include "JSetCrsr_patch.h"
 #include "JShieldCursor_patch.h"
 #include "JShowCursor_patch.h"
+#include "OffsetRgn_patch.h"
+#include "OpenRgn_patch.h"
 #include "ScrnBitMap_patch.h"
 #include "ScrollRect_patch.h"
+#include "SectRgn_patch.h"
+#include "SetEmptyRgn_patch.h"
 #include "SystemTask_patch.h"
 
 // Similar to "SP" for "stack pointer", "GP" is "globals pointer": the register
@@ -50,11 +60,11 @@ static void patch_table_and_globals(void)
 	asm
 	{
 begin_func(get_storage)
-		bsr.s 	@got_storage	; Push the address of the storage.
+		bsr.w 	@got_storage	; Push the address of the storage.
 		dc.l 	0				; Storage for pointer to our globals.
 
 extern begin_func(get_patch_table)
-		bsr.s 	@got_patch_table; Push the address of the patch table.
+		bsr.w 	@got_patch_table; Push the address of the patch table.
 
 		; The size of this function's code up to here must match the code_t
 		; struct in globals.h. The size and layout of the patch table entries
@@ -62,12 +72,24 @@ extern begin_func(get_patch_table)
 		; jmp instructions here but can't figure out how else to get THINK C to
 		; assemble the low-memory address using this symbol and the space used
 		; by the jmp instruction is used by install().
+		dc.l	_CloseRgn
+		dc.w	CloseRgn_patch
+		dc.l	_CopyRgn
+		dc.w	CopyRgn_patch
+		dc.l	_DisposHandle
+		dc.w	DisposeHandle_patch
+		dc.l	_DisposRgn
+		dc.w	DisposeRgn_patch
 #if !__option(a4_globals)
 		dc.l	_ExitToShell
 		dc.w	ExitToShell_patch
 #endif
 		dc.l	_FillRect
 		dc.w	FillRect_patch
+		dc.l	_InitZone
+		dc.w	InitZone_patch
+		dc.l	_InSetRgn
+		dc.w	InsetRgn_patch
 		jmp		JCrsrObscure
 		dc.w	JCrsrObscure_patch
 		jmp		JHideCursor
@@ -84,16 +106,24 @@ extern begin_func(get_patch_table)
 		dc.w	JShieldCursor_patch
 		jmp		JShowCursor
 		dc.w	JShowCursor_patch
+		dc.l	_OpenRgn
+		dc.w	OpenRgn_patch
+		dc.l	_OfSetRgn
+		dc.w	OffsetRgn_patch
 		dc.l	_ScrnBitMap
 		dc.w	ScrnBitMap_patch
 		dc.l	_ScrollRect
 		dc.w	ScrollRect_patch
+		dc.l	_SectRgn
+		dc.w	SectRgn_patch
+		dc.l	_SetEmptyRgn
+		dc.w	SetEmptyRgn_patch
 		dc.l	_SystemTask
 		dc.w	SystemTask_patch
 		dc.l	0				; End of patch table.
 
 @got_patch_table:
-		move.l	(sp)+, d0		; Put return value in D0.
+		move.l	(sp)+, d0		; Pop the address into D0.
 end_func(get_patch_table, rts)
 
 @got_storage:
@@ -108,10 +138,12 @@ end_func(link_globals, rts)
 #endif
 
 extern begin_func(begin_globals)
-		movea.l	4(sp), a0		; Move address of token into A0.
+		move.l	a0, -(sp)		; Save registers.
+		movea.l	8(sp), a0		; Move address of token into A0.
 		move.l	gp, (a0)		; Save GP in token.
 		bsr 	@get_storage	; Move address of GP storage into A0.
 		movea.l	(a0), gp		; Move stored GP into GP.
+		movea.l	(sp)+, a0		; Restore registers.
 end_func(begin_globals, rts)
 
 extern begin_func(end_globals)

@@ -8,6 +8,11 @@ SPDX-License-Identifier: MIT
 
 #include "constants.h"
 
+// rgnSave is defined as and documented to be a Handle but appears to be a
+// Boolean. Save and restore the original value, just in case it varies.
+#define get_rgnSave(RGNSAVE, PORT) (RGNSAVE) = (long)(PORT)->rgnSave
+#define set_rgnSave(RGNSAVE, PORT) (PORT)->rgnSave = (Handle)(RGNSAVE)
+
 #define get_trap_type(TRAP) ((TRAP) & 0x0800 ? ToolTrap : OSTrap)
 
 #define has_128k_rom() (ROM85 >= 0)
