@@ -23,7 +23,7 @@ pascal void CloseRgn_patch(void)
 {
 	asm
 	{
-		bsr 	@start							; Push token address; skip placeholders.
+		bsr.s 	@start							; Push token address; skip placeholders.
 @token	dc.l	0								; Placeholder for globals token.
 @orig	dc.l	k_placeholder					; Placeholder for old routine address.
 

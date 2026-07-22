@@ -28,7 +28,7 @@ static pascal void InsetOffsetRgn_patch(void)
 	asm
 	{
 extern InsetRgn_patch:
-		bsr 	@deref							; Push old routine pointer; skip placeholder.
+		bsr.s 	@deref							; Push old routine pointer; skip placeholder.
 @orig_I	dc.l	k_placeholder					; Placeholder for old routine address.
 
 extern InsetRgn_orig:
@@ -36,7 +36,7 @@ extern InsetRgn_orig:
 		rts										; "Return" to old routine.
 
 extern OffsetRgn_patch:
-		bsr 	@deref							; Push old routine pointer; skip placeholder.
+		bsr.s 	@deref							; Push old routine pointer; skip placeholder.
 @orig_O	dc.l	k_placeholder					; Placeholder for old routine address.
 
 extern OffsetRgn_orig:
@@ -46,7 +46,7 @@ extern OffsetRgn_orig:
 @deref	move.l	(sp), a0						; "Pop" old routine pointer.
 		move.l	(a0), (sp)						; "Push" old routine address.
 
-		bsr 	@start							; Push token address; skip placeholders.
+		bsr.s 	@start							; Push token address; skip placeholders.
 @token	dc.l	0								; Placeholder for globals token.
 
 @start	jsr		begin_globals					; Activate globals.

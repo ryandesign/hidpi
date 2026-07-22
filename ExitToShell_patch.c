@@ -17,7 +17,7 @@ pascal void ExitToShell_patch(void)
 {
 	asm
 	{
-		bsr 	@start							; Push token address; skip placeholders.
+		bsr.s 	@start							; Push token address; skip placeholders.
 @token	dc.l	0								; Placeholder for globals token.
 @orig	dc.l	k_placeholder					; Placeholder for old routine address.
 
@@ -37,12 +37,8 @@ extern ExitToShell_orig:
 
 static void ExitToShell_big(void)
 {
-//	long token;
-
-//	begin_globals(&token);
 #ifdef USE_TRAP_PATCHING
 	if (g_installed) uninstall(get_patch_table());
 #endif
 	deinit_qdprocs();
-//	end_globals(token);
 }

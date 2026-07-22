@@ -27,10 +27,11 @@ pascal void InitZone_patch(void)
 {
 	asm
 	{
-		bra		@start									; Skip placeholder.
+		bra.s	@start									; Skip placeholder.
 @orig	dc.l	k_placeholder							; Placeholder for old routine address.
 
 @start	move.l	d0, -(sp)								; Save registers.
+
 		move.w	InitZone_params.cMoreMasters(a0), d0	; Get number of masters from block.
 		lsr.w	#2, d0									; Divide by 4.
 		add.w	d0, InitZone_params.cMoreMasters(a0)	; Add to num masters in block.
