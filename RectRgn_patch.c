@@ -3,19 +3,24 @@ SPDX-FileCopyrightText: © 2026 Ryan Carsten Schmidt <https://github.com/ryandes
 SPDX-License-Identifier: MIT
 */
 
-#include "DisposeRgn_patch.h"
+#include "RectRgn_patch.h"
 
+#include "embiggen.h"
 #include "globals.h"
+#include "macros.h"
 #include "rgnset.h"
 
 typedef struct
 {
 	long return_address;
+	Rect *rect;
 	RgnHandle rgn;
 }
-DisposeRgn_stack;
+RectRgn_stack;
 
-pascal void DisposeRgn_patch(void)
+static void RectRgn_big(RectRgn_stack *stack);
+
+pascal void RectRgn_patch(void)
 {
 	asm
 	{
@@ -26,16 +31,34 @@ pascal void DisposeRgn_patch(void)
 @start	jsr		begin_globals					; Activate globals.
 		addq.l	#4, sp							; Pop token address.
 
-		move.l	DisposeRgn_stack.rgn(sp), -(sp)	; Push region.
-		jsr		dispose_rgnset					; Call our routine.
-		addq.l	#4, sp							; Pop region.
+		move.l	sp, -(sp)						; Push stack pointer.
+		jsr		RectRgn_big						; Call our routine.
+		addq.l	#4, sp							; Pop stack pointer.
 
 		move.l	@token, -(sp)					; Push token.
 		jsr		end_globals						; Deactivate globals.
 		addq.l	#4, sp							; Pop token.
 
-extern DisposeRgn_orig:
+extern RectRgn_orig:
 		move.l	@orig, -(sp)					; Push old routine address.
 		return									; "Return" to old routine.
 	}
+}
+
+static void RectRgn_big(RectRgn_stack *stack)
+{
+	rgnset_h rh;
+	Rect rect;
+
+	rh = get_rgnset(stack->rgn);
+	require(rh, end);
+
+	rect = *stack->rect;
+
+	RectRgn_orig((**rh).copy, &rect);
+	embiggen_rect(&rect);
+	RectRgn_orig((**rh).big, &rect);
+
+end:
+	;
 }

@@ -125,6 +125,8 @@ import_files \
         debigulate.h \
         debug.c \
         debug.h \
+        DiffSectUnionXorRgn_patch.c \
+        DiffSectUnionXorRgn_patch.h \
         DisposeHandle_patch.c \
         DisposeHandle_patch.h \
         DisposeRgn_patch.c \
@@ -143,8 +145,8 @@ import_files \
         init.c \
         InitZone_patch.c \
         InitZone_patch.h \
-        InsetRgn_patch.c \
-        InsetRgn_patch.h \
+        InsetOffsetRgn_patch.c \
+        InsetOffsetRgn_patch.h \
         install.c \
         install.h \
         JCrsrObscure_patch.c \
@@ -163,24 +165,24 @@ import_files \
         JShowCursor_patch.h \
         macros.h \
         missing_traps.h \
-        OffsetRgn_patch.c \
-        OffsetRgn_patch.h \
         OpenRgn_patch.c \
         OpenRgn_patch.h \
         patch_table.c \
         patch_table.h \
         qdprocs.c \
         qdprocs.h \
+        RectRgn_patch.c \
+        RectRgn_patch.h \
         rgnset.c \
         rgnset.h \
         ScrnBitMap_patch.c \
         ScrnBitMap_patch.h \
         ScrollRect_patch.c \
         ScrollRect_patch.h \
-        SectRgn_patch.c \
-        SectRgn_patch.h \
         SetEmptyRgn_patch.c \
         SetEmptyRgn_patch.h \
+        SetRectRgn_patch.c \
+        SetRectRgn_patch.h \
         system_requirements.c \
         system_requirements.h \
         SystemTask_patch.c \

@@ -9,12 +9,13 @@ SPDX-License-Identifier: MIT
 
 #include "CloseRgn_patch.h"
 #include "CopyRgn_patch.h"
+#include "DiffSectUnionXorRgn_patch.h"
 #include "DisposeHandle_patch.h"
 #include "DisposeRgn_patch.h"
 #include "ExitToShell_patch.h"
 #include "FillRect_patch.h"
 #include "InitZone_patch.h"
-#include "InsetRgn_patch.h"
+#include "InsetOffsetRgn_patch.h"
 #include "JCrsrObscure_patch.h"
 #include "JInitCrsr_patch.h"
 #include "JHideCursor_patch.h"
@@ -22,12 +23,12 @@ SPDX-License-Identifier: MIT
 #include "JSetCrsr_patch.h"
 #include "JShieldCursor_patch.h"
 #include "JShowCursor_patch.h"
-#include "OffsetRgn_patch.h"
 #include "OpenRgn_patch.h"
+#include "RectRgn_patch.h"
 #include "ScrnBitMap_patch.h"
 #include "ScrollRect_patch.h"
-#include "SectRgn_patch.h"
 #include "SetEmptyRgn_patch.h"
+#include "SetRectRgn_patch.h"
 #include "SystemTask_patch.h"
 
 // Similar to "SP" for "stack pointer", "GP" is "globals pointer": the register
@@ -76,6 +77,8 @@ extern begin_func(get_patch_table)
 		dc.w	CloseRgn_patch
 		dc.l	_CopyRgn
 		dc.w	CopyRgn_patch
+		dc.l	_DiffRgn
+		dc.w	DiffRgn_patch
 		dc.l	_DisposHandle
 		dc.w	DisposeHandle_patch
 		dc.l	_DisposRgn
@@ -110,6 +113,8 @@ extern begin_func(get_patch_table)
 		dc.w	OpenRgn_patch
 		dc.l	_OfSetRgn
 		dc.w	OffsetRgn_patch
+		dc.l	_RectRgn
+		dc.w	RectRgn_patch
 		dc.l	_ScrnBitMap
 		dc.w	ScrnBitMap_patch
 		dc.l	_ScrollRect
@@ -118,8 +123,14 @@ extern begin_func(get_patch_table)
 		dc.w	SectRgn_patch
 		dc.l	_SetEmptyRgn
 		dc.w	SetEmptyRgn_patch
+		dc.l	_SetRecRgn
+		dc.w	SetRectRgn_patch
 		dc.l	_SystemTask
 		dc.w	SystemTask_patch
+		dc.l	_UnionRgn
+		dc.w	UnionRgn_patch
+		dc.l	_XOrRgn
+		dc.w	XorRgn_patch
 		dc.l	0				; End of patch table.
 
 @got_patch_table:

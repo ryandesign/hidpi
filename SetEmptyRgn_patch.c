@@ -11,13 +11,12 @@ SPDX-License-Identifier: MIT
 
 typedef struct
 {
-	long saved_registers[1]; // A6
 	long return_address;
 	RgnHandle rgn;
 }
 SetEmptyRgn_stack;
 
-static void SetEmptyRgn_big(RgnHandle rgn);
+static void SetEmptyRgn_big(long return_address, RgnHandle rgn);
 
 pascal void SetEmptyRgn_patch(void)
 {
@@ -30,15 +29,11 @@ pascal void SetEmptyRgn_patch(void)
 @start	jsr		begin_globals					; Activate globals.
 		addq.l	#4, sp							; Pop token address.
 
-		link	a6, #0							; Create stack frame.
-
-		move.l	SetEmptyRgn_stack.rgn(a6), -(sp); Push region.
 		jsr		SetEmptyRgn_big					; Call our routine.
 
 		move.l	@token, -(sp)					; Push token.
 		jsr		end_globals						; Deactivate globals.
-
-		unlk	a6								; Delete stack frame.
+		addq.l	#4, sp							; Pop token.
 
 extern SetEmptyRgn_orig:
 		move.l	@orig, -(sp)					; Push old routine address.
@@ -46,21 +41,15 @@ extern SetEmptyRgn_orig:
 	}
 }
 
-static void SetEmptyRgn_big(RgnHandle rgn)
+static void SetEmptyRgn_big(long return_address, RgnHandle rgn)
 {
 	rgnset_h rh;
-	rgnset_p rp;
-	RgnHandle copy, big;
 
 	rh = get_rgnset(rgn);
 	require(rh, end);
 
-	rp = *rh;
-	copy = rp->copy;
-	big = rp->big;
-
-	SetEmptyRgn_orig(copy);
-	SetEmptyRgn_orig(big);
+	SetEmptyRgn_orig((**rh).copy);
+	SetEmptyRgn_orig((**rh).big);
 
 end:
 	;

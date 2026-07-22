@@ -12,14 +12,13 @@ SPDX-License-Identifier: MIT
 
 typedef struct
 {
-	long saved_registers[1]; // A6
 	long return_address;
 	RgnHandle dst;
 	RgnHandle src;
 }
 CopyRgn_stack;
 
-static void CopyRgn_big(RgnHandle src, RgnHandle dst);
+static void CopyRgn_big(CopyRgn_stack *stack);
 
 pascal void CopyRgn_patch(void)
 {
@@ -32,16 +31,13 @@ pascal void CopyRgn_patch(void)
 @start	jsr		begin_globals					; Activate globals.
 		addq.l	#4, sp							; Pop token address.
 
-		link	a6, #0							; Create stack frame.
-
-		move.l	CopyRgn_stack.dst(a6), -(sp)	; Push destination region.
-		move.l	CopyRgn_stack.src(a6), -(sp)	; Push source region.
+		move.l	sp, -(sp)						; Push stack pointer.
 		jsr		CopyRgn_big						; Call our routine.
+		addq.l	#4, sp							; Pop stack pointer.
 
 		move.l	@token, -(sp)					; Push token.
 		jsr		end_globals						; Deactivate globals.
-
-		unlk	a6								; Delete stack frame.
+		addq.l	#4, sp							; Pop token address.
 
 extern CopyRgn_orig:
 		move.l	@orig, -(sp)					; Push old routine address.
@@ -49,14 +45,14 @@ extern CopyRgn_orig:
 	}
 }
 
-static void CopyRgn_big(RgnHandle src, RgnHandle dst)
+static void CopyRgn_big(CopyRgn_stack *stack)
 {
 	rgnset_h srcrh, dstrh;
 
-	srcrh = get_rgnset(src);
+	srcrh = get_rgnset(stack->src);
 	require(srcrh, end);
 
-	dstrh = get_rgnset(dst);
+	dstrh = get_rgnset(stack->dst);
 	require(dstrh, end);
 
 	CopyRgn_orig((**srcrh).copy, (**dstrh).copy);
